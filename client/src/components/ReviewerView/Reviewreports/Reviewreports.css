@@ -1,0 +1,182 @@
+
+.reviewparents{
+    /* margin-right: 1%; */
+    margin-left: 4%;
+    /* justify-content: space-evenly; */
+    padding-bottom: 1%;
+    margin-top: 3%;
+    /* border-style: dotted; */
+ display: flex;
+    padding-left: 12px;
+    
+   
+
+
+}
+
+
+.ProjectNumber>input{
+    /* row-gap: 30%; */
+    /* column-gap: 410px; */
+    width: 120%;
+border-top: 0px;
+border-left: 0px;
+border-right: 0px;
+}
+
+
+.ReviewType>input{
+    width: 120%;
+    border-top: 0px;
+    border-left: 0px;
+    border-right: 0px;
+}
+
+
+.ReportType>input{
+    width: 120%;
+    border-top: 0px;
+    border-left: 0px;
+    border-right: 0px;
+}
+
+.RecievingContact>input{
+    width: 120%;
+    border-top: 0px;
+    border-left: 0px;
+    border-right: 0px;
+}
+
+
+.ResponsiblePerson>input{
+    width: 120%;
+    border-top: 0px;
+    border-left: 0px;
+    border-right: 0px;
+}
+
+.ReviewerDate>input{
+    width: 120%;
+    border-top: 0px;
+    border-left: 0px;
+    border-right: 0px;
+}
+
+
+.reportsreceivingcontainer{
+    padding-left: 8%;
+}
+
+.ReportRecieving>input{
+    width: 150%;
+    border-top: 0px;
+    border-left: 0px;
+    border-right: 0px;
+}
+
+.ReportReview>input{
+    width: 150%;
+    border-top: 0px;
+    border-left: 0px;
+    border-right: 0px;
+}
+
+
+.ProductsCovered>input{
+    width: 150%;
+    border-top: 0px;
+    border-left: 0px;
+    border-right: 0px;
+}
+
+.Models>input{
+    width: 150%;
+    border-top: 0px;
+    border-left: 0px;
+    border-right: 0px;
+}
+
+
+.Project>input{
+    width: 150%;
+    border-top: 0px;
+    border-left: 0px;
+    border-right: 0px;
+}
+
+.Comments>input{
+    width: 150%;
+    border-top: 0px;
+    border-left: 0px;
+    border-right: 0px;
+}
+
+
+
+.Reportsstandards{
+        border-style: solid;
+        border-color: rgb(112, 204, 229);    
+}
+
+
+.Reportsstandards{
+   
+    border-style: groove;
+    margin-top: 3%;
+    
+    padding-right: 1px;
+    margin-left: 12%;
+}
+
+
+.Reportsstandards>section{
+    border-color: rgb(80, 186, 186);
+    margin-top: -2px;
+    margin-left: 10px;
+    margin-right: 1px;
+    height: 50px;
+    width: 450px;
+    border-style: groove;
+    padding-left: 10px;
+     padding-top: 15px;
+}
+
+
+
+
+.DocumentsParents{
+    padding-top: 2%;
+    display: flex;
+    justify-content: space-between;
+    padding-right: 15%;
+    padding-left: 5%;
+}
+
+.DocumentsParents>section{
+    
+    color:rgb(31, 166, 199)
+}
+
+.DocumentsParents>input{
+    width: 25%;
+    background: bisque;
+    margin-bottom: 2%;
+}
+
+
+
+
+.AddReviewDocuments{
+    background-color: aqua;
+    display: flex;
+    justify-content: space-evenly;
+    padding-bottom: 5px;
+margin-bottom: 1%;}
+
+
+.ReportsandModel{
+    display: flex;
+    justify-content: space-evenly;
+    margin-left: -5px;
+    margin-bottom: 4%;
+}
