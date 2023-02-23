@@ -31,6 +31,6 @@ const manufacturer = sequelize.define("manufacturer",{
 })
 
 
-manufacturer.sync()
+//manufacturer.sync()
 
 module.exports = manufacturer

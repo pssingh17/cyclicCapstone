@@ -73,12 +73,21 @@ project.belongsTo(user,{
 })
 
 project.belongsTo(manufacturer,{
+    as:'projects_fk',
     foreignKey:{
         name:'transacting_customer',
         allowNull:false
     }
 })
 
-project.sync()
+manufacturer.hasMany(project,{
+    as:'projects_fk',
+    foreignKey:{
+        name:'transacting_customer',
+        allowNull:false
+    }
+})
+
+//project.sync()
 
 module.exports = project

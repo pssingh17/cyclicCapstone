@@ -82,3 +82,8 @@
     padding: 0.15rem;
     border: 0;
 }
+.resultCs:hover{
+    text-decoration: underline;
+    cursor: pointer;
+    color: rgb(50, 50, 249);
+}

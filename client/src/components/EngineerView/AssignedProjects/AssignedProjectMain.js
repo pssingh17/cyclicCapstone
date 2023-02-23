@@ -1,21 +1,42 @@
 import React, { useState } from 'react'
-import { Link, NavLink } from 'react-router-dom'
+import { Link, NavLink, Outlet, useNavigate } from 'react-router-dom'
 import FolderClosedIcon from '../../../images/folderClosed.gif.png'
 import FolderOpenIcon from '../../../images/folderOpen.gif.png'
 import PlusIcon from '../../../images/plus3.gif.png'
 import MinusIcon from '../../../images/minus5.gif.png'
+import { LoginDetails } from "../../Login/LoginReducer/LoginSlice";
+import { useDispatch } from 'react-redux'
+import { userLoginCheck } from '../../../helpers/userLoginCheck'
+import { useEffect } from 'react'
+
 
 export const AssignedProjectMain = () => {
     const [folderOpen, setFolderOpen] = useState(false)
+  
     let activeStyle = {
       textDecoration: "underline",
     };
     let activeClassName = "underline";
+    let passiveClassame = "text-dark"
+    let navigate = useNavigate()
+    let dispatch = useDispatch()
+    useEffect(()=>{
+      userLoginCheck().then(res=>{
+      //  console.log(res)
+       if(res?.userId?.user?.is_engineer===true || res?.userId?.user?.is_reviewer===true){
+         dispatch(LoginDetails(res.userId.user))
+       }
+       if(res.isLoggedIn === false){
+         alert(res?.message)
+         navigate('/')
+       }
+     }).catch(err=>{console.log(err)})
+     },[])
   return (
     <>
      <div className="homeBar">
        
-       <NavLink className="leftHBar" to="/landingPage">
+       <NavLink className="leftHBar" to="">
          <svg
            width="25"
            height="23"
@@ -54,18 +75,32 @@ export const AssignedProjectMain = () => {
     </div>
     <div className='rightAssigned'>
         <div className='navbarAssignedRight'>
-            <NavLink to="" className='text-dark '>Details</NavLink>
-            <Link to="" className='text-dark '>Financials</Link>
-            <NavLink to=""  className={({ isActive }) =>
-              isActive ? activeClassName : undefined
+            <NavLink to="details"  className={({ isActive }) =>
+              isActive ? activeClassName : passiveClassame
+            }>Details</NavLink>
+            <NavLink to="financials"  className={({ isActive }) =>
+              isActive ? activeClassName : passiveClassame
+            }>Financials</NavLink>
+            <NavLink to="deliverables"  className={({ isActive }) =>
+              isActive ? activeClassName : passiveClassame
             }>Deliverables</NavLink>
-            <Link to="" className='text-dark '>Supporting Documents</Link>
-            <Link to="" className='text-dark '>Correspondence</Link>
-            <Link to="" className='text-dark '>Equipment Log</Link>
-            <Link to="" className='text-dark '>Sample</Link>
+            <NavLink to="supportingDocuments"  className={({ isActive }) =>
+              isActive ? activeClassName : passiveClassame
+            }>Supporting Documents</NavLink>
+            <NavLink to="correspondence"  className={({ isActive }) =>
+              isActive ? activeClassName : passiveClassame
+            }>Correspondence</NavLink>
+            <NavLink to="equipmentLog"  className={({ isActive }) =>
+              isActive ? activeClassName : passiveClassame
+            }>Equipment Log</NavLink>
+            <NavLink to="sample"  className={({ isActive }) =>
+              isActive ? activeClassName : passiveClassame
+            }>Sample</NavLink>
+           
         </div>
        
-   <Link className='btn btn-success m-5' to="/engineerView/newReport">New Report</Link>
+   
+    <Outlet />
     </div>
    </div>
     </>

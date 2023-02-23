@@ -20,6 +20,6 @@ reviewStandards.belongsToMany(report,{through:reviewStandardsMapping
         name:'standard_id'
     }})
 
-reviewStandardsMapping.sync()
+//reviewStandardsMapping.sync()
 
 module.exports = reviewStandardsMapping

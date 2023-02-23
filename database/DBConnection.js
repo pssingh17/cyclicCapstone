@@ -20,11 +20,11 @@ const DB_TRANSACTION_NAMESPACE = cls.createNamespace('capstone-db-transactions')
         console.error('Unable to connect to the database: ', error);
      });
      
-     sequelize.sync().then(res=>{
-      console.log("Synced")
-     }).catch(err=>{
-      console.log("error in syncing" + err)
-     })
+    //  sequelize.sync().then(res=>{
+    //   console.log("Synced")
+    //  }).catch(err=>{
+    //   console.log("error in syncing" + err)
+    //  })
 
 
 module.exports = sequelize

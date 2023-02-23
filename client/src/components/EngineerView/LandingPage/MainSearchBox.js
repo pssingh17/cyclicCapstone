@@ -1,35 +1,110 @@
 import axios from "axios";
 import React from "react";
+import { useEffect } from "react";
 import { useForm } from "react-hook-form";
+import Button from 'react-bootstrap/Button';
+import Modal from 'react-bootstrap/Modal';
+import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 
 export const MainSearchBox = () => {
+  const [show, setShow] = useState(false);
+  const [searchResult, setSearchResult] = useState()
+  const handleClose = () => setShow(false);
+  const handleShow = () => setShow(true);
+  const navigate = useNavigate()
   const {
     register,
     handleSubmit,
     watch,
     formState: { errors },
   } = useForm();
+  function removeEmptyFields(data) {
+    Object.keys(data).forEach(key => {
+      if (data[key] === '' || data[key] == null || data[key]== NaN) {
+        delete data[key];
+      }
+    });
+  }
   const onSubmit = (data) => {
+    removeEmptyFields(data);
     console.log(data);
-
+    var myHeaders = new Headers();
+    myHeaders.append("Content-Type", "application/json");
+    myHeaders.append('Access-Control-Allow-Origin', 'http://localhost:8081')
+    myHeaders.append('Access-Control-Allow-Credentials', true)
+    
+   
+    
     axios({
-      method: "post",
-
-      url: "http://our api",
-
-      data: data,
-      headers: {
-        "content-type": "application/x-www-form-urlencoded;charset=utf-8",
-      },
+      method: 'get',
+      maxBodyLength: Infinity,
+        url: '/project/search',
+        params : data,
+        headers:myHeaders,
+        credentials: "include", 
+        withCredentials:true,
     })
-      .then((res) => {
-        console.log("hostsignup respose:", res.data);
-      })
-      .catch((err) => {
-        console.log(err);
-      });
+    .then(function (response) {
+      console.log(response.data);
+      setShow(true)
+      setSearchResult(response.data?.data)
+      if(response.data?.isLoggedIn == false){
+        alert(response.data?.message)
+        navigate('/')
+      }
+    })
+    .catch(function (error) {
+      console.log("Error block", error);
+      if(error?.response?.data?.isLoggedIn == false){
+        alert(error?.responsp.data?.message)
+        navigate('/')
+      }
+     
+    });
   };
+  
+ useEffect(()=>{console.log("search result check", searchResult)},[searchResult])
+ const showProject=(project_name)=>{
+  localStorage.setItem("ProjectName",JSON.stringify(project_name))
+  navigate('/engineerView/assignedProjects')
+ }
   return (
+    <>
+    {show?<>
+      <div
+      className="modal show "
+      style={{ display: 'block', position: 'absolute' }}
+    >
+      <Modal show={show} onHide={handleClose} backdrop="static">
+        <Modal.Header>
+          <Modal.Title>Search Results</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          {searchResult?.length>0? searchResult.map((data, index)=>{
+            return(
+            <div key={index}>
+            <div className="d-flex resultCs" onClick={()=>{
+              showProject(data?.project_name)
+            }}>
+            <p className="mr-3"><b>Project Name</b> : {data?.project_name}</p>
+            <p><b>Project Number</b> : {data?.project_number}</p>
+            </div>
+            
+            </div>
+            )
+          }):"No results"}
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={handleClose}>
+            Close
+          </Button>
+        
+        </Modal.Footer>
+      </Modal>
+      </div>
+    </>:""}
+    
     <div className="MainSearchContainer">
       <div>
         <div className="searchHeader mx-4 mt-1 p-3">
@@ -125,7 +200,7 @@ export const MainSearchBox = () => {
                   className="form-control"
                   placeholder="Customer Name"
                   aria-describedby="emailHelp"
-                  {...register("CustomerName")}
+                  {...register("name")}
                 />
               </div>
               <div className="mb-3">
@@ -133,34 +208,26 @@ export const MainSearchBox = () => {
                   type="text"
                   className="form-control"
                   placeholder="Customer Code"
-                  {...register("CustomerCode")}
+                  {...register("id")}
                 />
               </div>
               <div className="mb-3">
                 <input
-                  type="number"
+                  type="text"
                   className="form-control"
                   placeholder="Report Number"
-                  {...register("ReportNumber", {
-                    valueAsNumber: true,
-                  })}
+                  {...register("reportId")}
                 />
-                {errors.ReportNumber && (
-                  <p style={{ color: "red" }}>Must be a valid number</p>
-                )}
+              
               </div>
               <div className="mb-3">
                 <input
-                  type="number"
+                  type="text"
                   className="form-control"
                   placeholder="Project Number"
-                  {...register("ProjectNumber", {
-                    valueAsNumber: true,
-                  })}
+                  {...register("projectId")}
                 />
-                {errors.ProjectNumber && (
-                  <p style={{ color: "red" }}>Must be a valid number</p>
-                )}
+                
               </div>
 
               <div className="LoginForgot text-center pb-3">
@@ -173,5 +240,6 @@ export const MainSearchBox = () => {
         </div>
       </div>
     </div>
+    </>
   );
 };

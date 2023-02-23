@@ -13,7 +13,7 @@
 .CustomFormComtainer
 {padding-left: 10PX; 
     PADDING-RIGHT: 10px;
-    padding-top: 60px;
+    padding-top: 2.5rem;
     padding-bottom: 10px;
     
 }
@@ -30,10 +30,11 @@
 
 
 
-.w1>input{
+.formDetails>input{
     border-radius: 6px;
     width: 450px;
-    border-color: rgb(126, 195, 212);
+    border: 0 !important;
+    border: 1px solid #007D99 !important;
     
 }
 
@@ -151,7 +152,7 @@ border-radius: 6px;
 
 .FormRight{
     color: rgb(43, 144, 211);
-  padding-left: 110px;
+  /* padding-left: 110px; */
   
   padding-right: 10px;
     
@@ -243,14 +244,14 @@ border-radius: 6px;
 }
 .finalbuttons>input{
     
-  background: #76c670;  
+  background: #60CD8A;  
     color: #fcfcff;
+    border-radius: 6px;
 }
 
 
 .cancel>input{
-    background: #69c7d4;
-      color: #ffffff;
+    border-radius: 6px;
   }
 
   .assProjectContainer{
@@ -274,4 +275,22 @@ border: 1px solid #C3C3C3;
     background-color:  
     #F8F8F8;
     padding-top: 18px;
+  }
+  
+  .createProjectFolderBoxBorder{
+    border: 0 !important;
+    border: 1px solid #007D99 !important;
+  }
+
+  .customTableMArgin{
+    margin: 0 !important    ;
+    margin-left: 0.6rem !important;
+    
+  }
+  .custom-debounce-container{
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+  }
+  .createProjectFolderBoxBorder{
+    width: 100%;
   }

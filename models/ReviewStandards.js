@@ -23,6 +23,6 @@ const reviewStandards = sequelize.define('review_standards',{
     tableName:'review_standards'
 }) 
 
-reviewStandards.sync()
+//reviewStandards.sync()
 
 module.exports = reviewStandards

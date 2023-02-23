@@ -2,19 +2,22 @@
     color: #00A1C9;
     font-size: 0.75rem;
     font: bold;
-    width: 40rem;
+    /* width: 40rem; */
 }
 
 .custom_form{
     border: 1px solid #fff;
-    margin: 40px;
+    /* margin: 40px; */
     height: 550px;
+    
 
 }
 .custom{
     display:flex;
     border:1px dotted black;
-    border-left: 190px;
+    padding: 1rem;
+    justify-content: space-around;
+    /* border-left: 190px; */
     
 }
 
@@ -25,7 +28,7 @@
 
 .custom_txtbox{
     border: 1px solid #00A1C9;
-    width: 600px;
+    width: 30rem;
     
 }
 
@@ -57,7 +60,7 @@
 
 .upload_label{
     /* position:static; */
-    width: 600px;
+    width: auto;
     height: 100px;
     font-size: 0.85rem;
     font: bold;
@@ -68,7 +71,7 @@
 }
 
 .choose_file{
-    width: 150px;
+    width: auto;
     height: 40px;
     font-size: 0.75rem;
     font: bold;
@@ -80,28 +83,28 @@
 }
 
 .btn_custom{
-    top: 20px;
+    /* top: 20px; */
     margin-left: 20px;
     position:relative;
-    right: -250px;
+    /* right: -250px; */
     font-size: 0.85rem;
     font:bold;
 }
 
-.btn_custom1{
-    top: 20px;
+.btn_custom{
+    /* top: 20px; */
     margin-left: 20px;
     position:relative;
-    right: -250px;
+    /* right: -250px; */
     font-size: 0.85rem;
     font:bold;
     background-color: green;
 }
 .btn_custom2{
-    top: 20px;
-    margin-left: 20px;
+    /* top: 20px; */
+    /* margin-left: 20px; */
     position:relative;
-    right: -250px;
+    /* right: -250px; */
     font-size: 0.85rem;
     font:bold;
     background-color: black;
@@ -116,4 +119,12 @@
     font-size: .65rem;
     margin-top: 0px;
     margin-bottom: 10px;
+}
+
+.leftSideNRep{
+    width: 100%;
+}
+.custom3btn{
+    display: flex;
+    justify-content: flex-end;
 }

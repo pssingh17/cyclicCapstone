@@ -4,6 +4,9 @@ const bcrypt = require('bcrypt')
 const manufacturer = require('../models/Manufacturer')
 const Response = require('../service/customResponse')
 const sequelize = require('../database/DBConnection')
+const {Op} = require('sequelize')
+const project = require('../models/Project')
+
 
 
 async function saveUser(body){
@@ -11,7 +14,7 @@ async function saveUser(body){
    const savedUser = await sequelize.transaction(async (t) => {
 
          const savedUser = await user.create({
-            id:alphanumeric(5)+Math.floor(Math.random() * 1000000)+alphanumeric(5),
+            id:(alphanumeric(2)+Math.floor(Math.random() * 1000000)+alphanumeric(2)).toUpperCase(),
             name:body.name,
             email:body.email,
             password:bcrypt.hashSync(body.password,10),
@@ -43,7 +46,7 @@ async function saveManufacturer(body){
         const newMerchant = await sequelize.transaction(async (t) => {
             
             const newMerchant = await manufacturer.create({
-                id:alphanumeric(3)+Math.floor(Math.random() * 8000000)+alphanumeric(6),
+                id:(alphanumeric(4)+Math.floor(Math.random() * 8000000)+alphanumeric(1)).toUpperCase(),
                 name:body.name,
                 company_name:body.company_name,
                 email:body.email,
@@ -62,4 +65,116 @@ async function saveManufacturer(body){
     }
 }
 
-module.exports = {saveUser,getUserById,saveManufacturer}
+
+async function getProjectByManufactureNameOrId(name,id){
+     
+   try{
+    if(name){
+        name = name.toLowerCase()
+    }
+
+    const result = await manufacturer.findAll({
+        where:{
+            [Op.or]:
+            [
+               {name:{[Op.like]:`${name}%`}},
+               {name:{[Op.like]:`%${name}%`}},
+               {name:{[Op.like]:`%${name}`}},
+               {id:{[Op.eq]:`${id}`}}
+            ]
+        },
+        attributes:['id','name','company_name'],
+        include:{
+               model:project,
+               as:'projects_fk',
+               attributes:['project_number','project_name']
+        }
+    },{raw:true})
+
+    let projects = []
+
+    for(let i=0 ; i<result.length ; i++){
+        const projects_fk = result[i].dataValues.projects_fk
+        for(let j=0 ; j<projects_fk.length ; j++){
+            projects.push(projects_fk[j].dataValues)
+        }
+    }
+ 
+    return new Response(200,"SUCCESS","Manufacture Id and name search.",projects)
+   }catch(error){
+       console.log("User Dao || Getting Manufacture based on name and id " + error)
+       return new Response(500,"FAILURE","Unknown error occured.",null)
+   }
+
+}
+
+
+
+async function getManufactureNameOrId(name,id){
+     
+    if(!name && !id){
+        return new Response(400,"SUCCESS","name and id field missing in req query params.",null)
+    }
+
+    try{
+     if(name){
+         name = name.toLowerCase()
+     }
+ 
+     const result = await manufacturer.findAll({
+         where:{
+             [Op.or]:
+             [
+                {name:{[Op.like]:`${name}%`}},
+                {name:{[Op.like]:`%${name}%`}},
+                {name:{[Op.like]:`%${name}`}},
+                {id:{[Op.eq]:`${id}`}}
+             ]
+         },
+         attributes:['id','name','company_name'],
+     },{raw:true})
+ 
+     return new Response(200,"SUCCESS","Manufacture Id and name search.",result)
+    }catch(error){
+        console.log("User Dao || Getting Manufacture based on name and id " + error)
+        return new Response(500,"FAILURE","Unknown error occured.",null)
+    }
+ 
+ }
+
+
+ async function getUserByNameOrId(name,id){
+     
+    if(!name && !id){
+        return new Response(400,"SUCCESS","name and id field missing in req query params.",null)
+    }
+
+    try{
+     if(name){
+         name = name.toLowerCase()
+     }
+ 
+     const result = await user.findAll({
+         where:{
+             [Op.or]:
+             [
+                {name:{[Op.like]:`${name}%`}},
+                {name:{[Op.like]:`%${name}%`}},
+                {name:{[Op.like]:`%${name}`}},
+                {id:{[Op.eq]:`${id}`}}
+             ]
+         },
+         attributes:['id','name','is_engineer','is_reviewer'],
+     },{raw:true})
+ 
+     return new Response(200,"SUCCESS","User Id and name search.",result)
+    }catch(error){
+        console.log("User Dao || Getting Manufacture based on name and id " + error)
+        return new Response(500,"FAILURE","Unknown error occured.",null)
+    }
+ 
+ }
+
+
+module.exports = {saveUser,getUserById,saveManufacturer,getProjectByManufactureNameOrId,
+                 getManufactureNameOrId,getUserByNameOrId}

@@ -2,8 +2,11 @@ const project = require('../models/Project')
 const userDao = require('./userDao')
 const alphanumeric = require('alphanumeric-id')
 const Response = require('../service/customResponse')
-const {SequelizeForeignKeyConstraintError} = require('sequelize')
 const sequelize = require('../database/DBConnection')
+const { Op } = require("sequelize");
+const User = require('../models/User')
+
+
 
 async function saveProject(userId,body){
 
@@ -18,7 +21,7 @@ async function saveProject(userId,body){
                 lab_name : body.lab_name,
                 receiving_customer:body.receiving_customer,
                 project_type : body.project_type,
-                project_number : Math.floor(Math.random() * 9000000000) + (alphanumeric(6)),
+                project_number : (Math.floor(Math.random() * 900000) + (alphanumeric(4))).toUpperCase(),
                 project_name:body.project_name,
                 description:body.description,
                 purchase_order_number:body.purchase_order_number,
@@ -45,10 +48,56 @@ async function saveProject(userId,body){
         return new Response(400,"FAILURE","Receiving Customer and/or Report Creator are invalid users or Manufacturer does not exist in the system.","")
     }
        console.log("ProjectDao || saveProject ==> " + JSON.stringify(error))
-       return new Response(500,"FAILURE",`Error ${error.name} occured while processing request.`,"")
+       return new Response(500,"FAILURE",`Unknown error occured.`,"")
    }
     
 }
 
-module.exports = {saveProject}
+async function getProjectByName(name,id,userId){
+    if(name){
+        name = name.toLowerCase()
+    }
+
+   try{
+    const projects = await project.findAll({
+        where:{
+           [Op.and] : [
+                {created_by : {[Op.eq] : userId}},
+                {
+                    [Op.or] : [
+                        {project_name:{[Op.like] : `${name}%`}},
+                        {project_name:{[Op.like] : `%${name}%`}},
+                        {project_name:{[Op.like] : `%${name}`}},
+                        {project_number:{[Op.like]:`${id}%`}},
+                        {project_number:{[Op.like]:`%${id}%`}},
+                        {project_number:{[Op.like]:`%${id}`}}
+                    ]
+                }   
+            ]
+        },
+        attributes : ['project_name','project_number']
+    },{raw:true})
+    
+    return new Response(200,"SUCCESS",`Projects related to userId ${userId}.`,projects)
+   }catch(error){
+          console.log("ProjectDao || Error getting projects " + error)
+          return new Response(500,"FAILURE",`Unknown error occured.`,null)
+   }
+
+}
+
+async function getAllProjectInfo(id){
+
+    try{
+        const result = project.findByPk(id,{
+            
+        })
+    }catch(error){
+
+    }
+
+}
+
+
+module.exports = {saveProject,getProjectByName}
 

@@ -53,6 +53,6 @@ document.belongsTo(report,{
 })
 
 
-document.sync()
+//document.sync()
 
 module.exports = document

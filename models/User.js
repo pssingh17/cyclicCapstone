@@ -42,6 +42,6 @@ const user = db.define("user",{
     timestamps:false
 })
 
-user.sync()
+//user.sync()
 
 module.exports = user

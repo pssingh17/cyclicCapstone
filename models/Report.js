@@ -2,6 +2,7 @@ const sequelize = require('../database/DBConnection')
 const {DataTypes} = require('sequelize')
 const user = require('./User')
 const project = require('./Project')
+const status = require('./ReportStatus')
 
 
 const report = sequelize.define('report',{
@@ -11,7 +12,7 @@ const report = sequelize.define('report',{
        allowNull:false
     },
     issued_at:{
-        type:DataTypes.DATEONLY
+        type:DataTypes.STRING
     },
     tags:{
         type:DataTypes.STRING
@@ -34,9 +35,6 @@ const report = sequelize.define('report',{
     },
     updated_at:{
         type:DataTypes.DATE
-    },
-    status:{
-        type:DataTypes.STRING
     },
     is_active:{
         type:DataTypes.BOOLEAN,
@@ -83,7 +81,34 @@ report.belongsTo(project,{
     onDelete:'CASCADE'
 })
 
-report.sync()
+project.belongsTo(report,{
+    as:'project_number_fk',
+    foreignKey:{
+        name:'project_number',
+        allowNull:false
+    },
+    onDelete:'CASCADE'
+})
+
+report.belongsTo(status,{
+    as:'report_status_fk',
+    foreignKey:{
+        name:'status_id',
+        allowNull:false
+    },
+    onDelete:'CASCADE'
+})
+
+status.hasMany(report,{
+    as:'report_status_fk',
+    foreignKey:{
+        name:'status_id',
+        allowNull:false
+    },
+    onDelete:'CASCADE'
+})
+
+//report.sync()
 
 module.exports = report
 

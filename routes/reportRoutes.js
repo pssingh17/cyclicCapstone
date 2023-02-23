@@ -5,26 +5,24 @@ const azureStorage = require('../service/AzureStorage')
 const {dirname}  = require('path')
 const path  = require('path')
 const appDir = dirname(require.main.filename)
-
+const reportStatus = require('../models/ReportStatus')
 
 
 const reportRoute = express.Router()
 const reportUpload = upload.fields([{name:'report',maxCount:1},{name:'certificate',maxCount:1}])
 
+reportRoute.all('*',(req,res,next)=>{
+     return req.isAuthenticated() ?
+     next() :  
+     res.status(401).json({status:"FAILURE",message:"Please LogIn.",isLoggedIn:false})
+})
 
+reportRoute.get('/',async (req,res)=> {
+      return await reportService.getReportsWithStatusCount(res)
+})
 
-reportRoute.post('/',reportUpload,async (req,res)=>{
-       console.log(req.files['report'][0])  
-       await azureStorage.uploadBlob(req.files['report'][0],"dummy3","report-01")
-       await azureStorage.downloadBlob(path.join(appDir,'/downloads/name.docx'),"dummy3","report-01")
-       //fs.unlinkSync(req.files['report'][0].path)
-       await azureStorage.deleteContainer("dummy3")
-    //    res.download(req.files['report'][0].path,(err)=>{
-    //        if(err){
-    //         console.log(err)
-    //        }
-    //    })
-    res.json("HOPE")
+reportRoute.post('/',reportUpload,async (req,res)=>{ 
+      return await reportService.saveReport(req,res)
 })
 
 module.exports = reportRoute

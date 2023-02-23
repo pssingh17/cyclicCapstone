@@ -1,8 +1,8 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Header } from "../Common/Header/Header";
 import ComplianceLogos from "../../images/complianceLogosImage.png";
 import './Login.css'
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { LoginDetails } from "./LoginReducer/LoginSlice";
 import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
@@ -17,12 +17,17 @@ export const Login = () => {
   const [cookie, setCookie, removeCookie] = useCookies(['accessToken']);
   const { register, handleSubmit, watch, formState: { errors } } = useForm();
   
+  const ULogged = useSelector((state)=>state.Login.value)
 
   const onSubmit = data => {
     console.log("Login clicked")
+   
+ 
+    
+    // console.log(data)
     var myHeaders = new Headers();
   myHeaders.append("Content-Type", "application/json");
-  myHeaders.append('Access-Control-Allow-Origin', 'http://localhost:8081/')
+  myHeaders.append('Access-Control-Allow-Origin', 'http://localhost:8081')
   myHeaders.append('Access-Control-Allow-Credentials', true)
  
     
@@ -36,19 +41,20 @@ export const Login = () => {
         
         data:data, 
         credentials: "include", 
+        withCredentials:true,
          headers: myHeaders,
-        
-        
-        
+       
       }).then(res=>{
         let cookieCheck = cookie?.accessToken
+        console.log(res.headers)
+        console.log(res.config)
       // console.log("res check:",res)
       if(res?.data?.data?.isLoggedIn){
 
-        dispatch(LoginDetails(res.data))
+        dispatch(LoginDetails(res.data?.data))
         navigate('/engineerView/landingPage')
         // console.log("login respose :", res.data)
-        setCookie("accessToken",res?.data?.accessToken,{path:'/'})
+      
       }
       
       }
@@ -56,7 +62,12 @@ export const Login = () => {
       
 };
 
- 
+ useEffect(()=>{
+  
+  if(ULogged?.is_engineer===true){
+    navigate('/engineerView/landingPage')
+  }
+ },[])
 
   return (
     <div className="MainLoginHeader">
