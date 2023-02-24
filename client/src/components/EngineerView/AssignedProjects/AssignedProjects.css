@@ -1,0 +1,296 @@
+.FormDetails{
+    display: flex;
+    justify-content:space-evenly;
+    
+    border:  solid #afafb1;
+    /* width: 0px; */
+    border-width: 3px;
+    
+    height: 580px; 
+}
+
+
+.CustomFormComtainer
+{padding-left: 10PX; 
+    PADDING-RIGHT: 10px;
+    padding-top: 2.5rem;
+    padding-bottom: 10px;
+    
+}
+
+
+.FormLeft{
+    
+    color: rgb(43, 144, 211);
+  padding-left: 5px;
+  padding-top: 10px;
+  
+}
+
+
+
+
+.formDetails>input{
+    border-radius: 6px;
+    width: 450px;
+    border: 0 !important;
+    border: 1px solid #007D99 !important;
+    
+}
+
+
+
+.w3{  
+ display: flex; 
+}
+
+.w3>input{
+    border-radius: 6px;
+    border-color: rgb(130, 194, 209);
+    width: 210px; 
+}
+
+
+.w4{
+   
+    padding-left: 30px;
+    
+}
+
+.w4>input{
+    width: 210px;
+    border-radius: 6px;
+    border-color: rgb(131, 219, 235);
+}
+
+
+
+.lefttb2{
+    display: flex;
+    padding-top: 5px;
+    
+}
+
+.moveright{
+    
+    display: flex;
+    padding-left: 147px;
+}
+
+
+.lefttb3{
+    padding-top: 5px;
+}
+
+.w5>input{
+    border-radius: 6px;
+    width: 330px;
+    border-color: rgb(131, 226, 236);
+    
+    
+}
+
+.Btnm1{
+    
+    background: black;
+    color: rgb(252, 249, 247);
+
+}
+
+.w5>.Btnm1{
+    width: 120px;
+}
+
+.lefttb4{
+    padding-top: 5px;
+}
+
+.w6>input{
+    border-radius: 6px;
+    width: 330px;
+    border-color: rgb(133, 228, 240);
+    }
+
+.w6>.Btnm1{
+    width: 120px;
+}
+
+.lefttb5{
+    
+    padding-top: 5px;
+    padding-bottom: 5px;
+}
+
+
+.sam>textarea{
+    border-color: rgb(133, 228, 235);
+    height: 90px;
+    width: 100%;
+    border-radius: 6px;
+    
+}
+
+
+.sam>{
+    border-color: #8ae8f5;
+    height: 79px;
+    width: 100%;
+}
+
+
+.sam>input{
+    
+height: 80px; 
+width: 450px;
+border-radius: 6px;
+;   
+}
+
+
+
+
+
+.FormRight{
+    color: rgb(43, 144, 211);
+  /* padding-left: 110px; */
+  
+  padding-right: 10px;
+    
+}
+
+
+    
+    
+
+
+.righttb1>section {
+    padding-top: 5px;
+   
+}
+
+.productcovered>input{
+    border-radius: 6px;
+    width: 450px;
+    height: 90px;
+    border-color: rgb(113, 209, 228);
+}
+
+.righttb2{
+  
+    padding-top: 5px;
+}
+
+.models>input{
+    border-radius: 6px;
+    width: 450px;
+   
+    border-color: rgb(113, 209, 228);
+    height: 90px;
+}
+
+
+
+.righttb3{
+    padding-top: 5px;
+    color: #75a9b3;
+    display: flex;
+}
+
+.moveright1{
+    padding-left: 143px;
+}
+
+.righttb4>section{
+    padding-top: 5px;
+}
+
+.righttb4{
+    color: #69c7d4;
+    display: flex;
+}
+
+.moveright2{
+    padding-top: 5px;
+    padding-left: 108px;
+}
+
+
+
+.moveright3{
+    display: flex;
+}
+
+
+.righttb5{
+    padding-top: 5px;
+    color: #90e3f2;
+    display: flex;
+}
+
+
+
+.moveright3{
+    padding-left: 89px;
+}
+
+
+
+
+.finalbuttons{
+  padding-bottom: 20px;
+   display: flex;
+    
+    justify-content: end;
+}
+.finalbuttons>input{
+    
+  background: #60CD8A;  
+    color: #fcfcff;
+    border-radius: 6px;
+}
+
+
+.cancel>input{
+    border-radius: 6px;
+  }
+
+  .assProjectContainer{
+    display: grid;
+    grid-template-columns: 1fr 5fr;
+  }
+  .leftNavAssigned{
+    height: 70vh;
+    background: #FFFFFF;
+border: 1px solid #C3C3C3;
+  }
+  .sideNavContainer{
+    display: flex;
+    align-items: start;
+  }
+
+  .navbarAssignedRight{
+    display: flex;
+    justify-content: space-around;
+    
+    background-color:  
+    #F8F8F8;
+    padding-top: 18px;
+  }
+  
+  .createProjectFolderBoxBorder{
+    border: 0 !important;
+    border: 1px solid #007D99 !important;
+  }
+
+  .customTableMArgin{
+    margin: 0 !important    ;
+    margin-left: 0.6rem !important;
+    
+  }
+  .custom-debounce-container{
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+  }
+  .createProjectFolderBoxBorder{
+    width: 100%;
+  }
