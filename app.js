@@ -4,8 +4,8 @@ const projectRoutes = require('./routes/projectRoutes')
 const reportRoute = require('./routes/reportRoutes')
 const path = require('path')
 
-// app.use(express.static(path.join(__dirname, "./client/build")));
-// app.get("*", function (_, res) {
+app.use(express.static(path.join(__dirname, "./client/build")));
+// app.get("*", function (req, res) {
 //   res.sendFile(
 //     path.join(__dirname, "./client/build/index.html"),
 //     function (err) {
@@ -17,6 +17,10 @@ const path = require('path')
 app.use('/user',userRoutes)
 app.use('/project',projectRoutes)
 app.use('/report',reportRoute)
+
+app.get("/*", function (req, res) {
+  res.sendFile(path.resolve(__dirname, '../client/build', 'index.html'));
+})
 
 app.listen(8081,()=>{
     console.log("Server up and running at port 8081.")

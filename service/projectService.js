@@ -21,6 +21,8 @@ async function getManufactureOrProjectInfo(req,res){
 
     const {projectId,reportId,name,id} = req.query
 
+     console.log("Search API being called with " + req.query)
+
     if(!projectId && !reportId && !name && !id){
         return res.status(400).json((new Response(400,"SUCCESS","projectId or reportId or name or id fields missing in req query params.",null).getErrorObject()))
     }
