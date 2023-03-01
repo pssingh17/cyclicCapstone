@@ -1,8 +1,8 @@
 class Response{
-    constructor(statusCode,status,message,result){
+    constructor(statusCode,status,message,data){
         this.status = status ? status : 'SUCCESS'
         this.message = message ? message : ''
-        this.result = result ? result : ''
+        this.data = data ? data : ''
         this.statusCode = statusCode ? parseInt(statusCode) : 200
     }
     
@@ -19,8 +19,8 @@ class Response{
         return this.message
     }
 
-    getResult(){
-        return this.result
+    getData(){
+        return this.data
     }
 
     getSuccessObject(){
@@ -28,7 +28,7 @@ class Response{
             statusCode:this.statusCode,
             status : this.status,
             message : this.message,
-            data : this.result
+            data : this.data
         }
     }
 

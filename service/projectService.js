@@ -2,6 +2,7 @@ const projectDao = require('../database/projectDao')
 const userDao = require('../database/userDao')
 const reportDao = require('../database/reportDao')
 const Response = require('./customResponse')
+const StatusType = require('../service/staticData/StatusType')
 
 
 async function saveProject(userId,body,res){
@@ -47,6 +48,25 @@ async function getManufactureOrProjectInfo(req,res){
     }
 }
 
+
+async function getAllProjectInformation(req,res){
+
+    const {id} = req.params
+    const {screenId} = req.query
+    console.log("Fetching data for the projectId : " + id)
+     
+    const response = await projectDao.getAllProjectInfo(id,req.user.userId,screenId)
+    return createResponse(response,res)
+}
+
+
+async function getNotificationsForTheEngineer(req,res){
+    const {limit,offset} = req.query
+    const result = await projectDao.getEngineerLatestNotifications(req.user.userId,limit,offset)
+    return createResponse(result,res)
+}
+
+
 function createResponse(response,res){
     if(response.getStatusCode() !== 200){
         return res.status(response.getStatusCode()).json(response.getErrorObject())
@@ -55,4 +75,5 @@ function createResponse(response,res){
     return res.json(response.getSuccessObject())
 } 
 
-module.exports = {saveProject,getProjectsByName,getManufactureOrProjectInfo}
+module.exports = {saveProject,getProjectsByName,getManufactureOrProjectInfo,getAllProjectInformation,
+                 getNotificationsForTheEngineer}

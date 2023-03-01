@@ -5,6 +5,9 @@ const Response = require('../service/customResponse')
 const sequelize = require('../database/DBConnection')
 const { Op } = require("sequelize");
 const User = require('../models/User')
+const reportDao = require('./reportDao')
+const { QueryTypes } = require('sequelize');
+const StatusType = require('../service/staticData/StatusType')
 
 
 
@@ -86,18 +89,66 @@ async function getProjectByName(name,id,userId){
 
 }
 
-async function getAllProjectInfo(id){
+async function getAllProjectInfo(id,userId,screenId){
 
     try{
-        const result = project.findByPk(id,{
-            
+        const result = await project.findByPk(id,{
+            where:{
+                [Op.eq]:{created_by:userId}
+            }
         })
-    }catch(error){
 
+        let reports = null
+        if(!screenId || isNaN(screenId)){
+            reports = await reportDao.getReportsWithNoDocumentsUploaded(id,userId)
+        }else{
+            reports = await reportDao.getAllReportsBasedOnDocumentType(id,parseInt(screenId),userId)
+        }
+     
+        const projectInfo = {
+            project:result,
+            reports:reports
+        }
+
+        return new Response(200,"SUCCESS",`Project information related to projectId ${id}.`,projectInfo)
+    }catch(error){
+       console.log("Error Fetching the Project info => " + error)
+       return new Response(500,"FAILURE",`Unknown error occured.`,null)
     }
+}
+
+
+async function getEngineerLatestNotifications(userId,limit,offset){
+
+    if(!limit || isNaN(limit)){
+        limit=10 
+    }
+
+    if(!offset || isNaN(offset)){
+        offset=0
+    }
+
+    try{
+          let query = `select r.report_name , r.report_number , r.created_at as 'report_created_at' , r.updated_at as 'report_updated_at',
+          r.reviewer_id , u.name as 'reviewer_name' , st.name as 'report_status' from report r inner join user u on r.reviewer_id = u.id 
+          inner join status_type st on r.status_id = st.id where r.status_id not in (?) and r.created_by=? order by 
+          r.updated_at desc limit ? offset ?`
+
+          const result = await sequelize.query(query,{
+            replacements:[[StatusType.statusTypeOmitForEngineer],userId,parseInt(limit),parseInt(offset)],
+            raw:true,
+            type:QueryTypes.SELECT
+          })
+          
+        return new Response(200,"SUCCESS",`Notifications for userId ${userId}.`,result)
+    }catch(error){
+        console.log("Error in getting engineer latest notifications " + error)
+        return new Response(500,"FAILURE",`Unknown error occured.`,null)
+    }
+
 
 }
 
 
-module.exports = {saveProject,getProjectByName}
+module.exports = {saveProject,getProjectByName,getAllProjectInfo,getEngineerLatestNotifications}
 

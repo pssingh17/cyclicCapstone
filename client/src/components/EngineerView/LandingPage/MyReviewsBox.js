@@ -1,6 +1,35 @@
+import axios from "axios";
 import React from "react";
+import { useState } from "react";
+import { useEffect } from "react";
+import { useDispatch } from "react-redux";
+import { LoaderStatus } from "../../Common/LoaderReducer/LoaderSlice";
 
 export const MyReviewsBox = () => {
+  const [reportCountData, setReportCountData] = useState()
+  const dispatch = useDispatch()
+  useEffect(()=>{
+    // dispatch(LoaderStatus(true))
+    var myHeaders = new Headers();
+    myHeaders.append("Content-Type", "application/json");
+    myHeaders.append('Access-Control-Allow-Origin', 'http://localhost:8081')
+    myHeaders.append('Access-Control-Allow-Credentials', true)
+    axios({
+     method:'get',
+     maxBodyLength: Infinity,
+     url: '/report',
+     headers:myHeaders
+    }).then(res=>{
+    //  dispatch(LoaderStatus(false))
+    //  console.log("response form report count MyreviewBox", res.data)
+    if(res?.data?.data.length>0){
+       setReportCountData(res?.data?.data)
+    }
+   })
+    .catch(err=>{
+     console.log(err)
+    })
+  },[])
   return (
     <div className="py-3 px-2">
       <div className="myContainer ">
@@ -8,40 +37,22 @@ export const MyReviewsBox = () => {
           <div style={{fontSize:"15px",fontWeight:"Bold"}}>My Reviews</div>
           <div><a href="#">View All</a></div>
         </div>
-        <div className="customBody">
-          <div className="customItems">
-            <div>Pending</div>
-            <div className="badge bg-primary">0</div>
+        {reportCountData?.length>0 ? <>
+        {reportCountData.map((report)=>{
+          return(
+            <div key={report?.statusId} className="customBody">
+            <div className="customItems">
+              <div>{report?.statusName}</div>
+              <div className="badge bg-primary">{report?.count}</div>
+            </div>
+           
           </div>
-          <div className="customItems">
-            <div>Validation Failed</div>
-            <div className="badge bg-primary">0</div>
-          </div>
-          <div className="customItems">
-            <div>Declined</div>
-            <div className="badge bg-primary">0</div>
-          </div>
-          <div className="customItems">
-            <div>Sent to Reviewer</div>
-            <div className="badge bg-primary">0</div>
-          </div>
-          <div className="customItems">
-            <div>Submitted/Waiting Validation</div>
-            <div className="badge bg-primary">0</div>
-          </div>
-          <div className="customItems">
-            <div>Submitted/Pending Validation</div>
-            <div className="badge bg-primary">0</div>
-          </div>
-          <div className="customItems">
-            <div>Approved</div>
-            <div className="badge bg-primary">0</div>
-          </div>
-          <div className="customItems pb-4">
-            <div>Rejected</div>
-            <div className="badge bg-primary">0</div>
-          </div>
-        </div>
+          )
+          
+        })}
+         
+        </>:""}
+        
       </div>
     </div>
   );

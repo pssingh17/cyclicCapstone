@@ -1,44 +1,66 @@
 import axios from 'axios'
-import React, { useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
+import { useDispatch, useSelector } from 'react-redux'
 import { Link, useNavigate } from 'react-router-dom'
-
+import { DeliverablesDetails } from './DeliverablesReducer/Deliverables'
+import {LoaderStatus} from '../../../Common/LoaderReducer/LoaderSlice'
+import Cookies from 'universal-cookie'
+import { LoginDetails } from '../../../Login/LoginReducer/LoginSlice'
 export const Deliverables = () => {
   let navigate = useNavigate()
+  const dispatch = useDispatch()
+  const cookies = new Cookies()
 
+  const DeliverableMain = useSelector((state) => state.Deliverables.value);
+  
   useEffect(()=>{
-    let project_name = JSON.parse(localStorage.getItem("ProjectName"))
-    if(project_name != undefined){
+    dispatch(LoaderStatus(true))
+    // let project_name = JSON.parse(localStorage.getItem("ProjectName"))
+    var myHeaders = new Headers();
+    myHeaders.append("Content-Type", "application/json");
+    myHeaders.append('Access-Control-Allow-Origin', 'http://localhost:8081')
+    myHeaders.append('Access-Control-Allow-Credentials', true)
+   
       axios({
         method: 'get',
         maxBodyLength: Infinity,
-          url: '/project/',
+        url: '/project/2897561PF2',
+        headers:myHeaders,
+        credentials: "include", 
+        withCredentials:true,
           params : {
-            name: project_name
+            screenId: 2
           },
-          // headers:myHeaders,
-          credentials: "include", 
-          withCredentials:true,
+        
       })
       .then(function (response) {
-        console.log("Response in deliverables",response.data);
-      
-        
-        if(response.data?.isLoggedIn == false){
-          alert(response.data?.message)
-          navigate('/')
+        // console.log("Response in deliverables",response.data);
+        if(response?.data?.data?.project){
+          dispatch(DeliverablesDetails(response?.data?.data))
+          dispatch(LoaderStatus(false))
         }
+        else{console.log("no projects yet")
+        dispatch(LoaderStatus(false))
+      }
+        
+      
       })
       .catch(function (error) {
-        console.log("Error block", error);
-        if(error?.response?.data?.isLoggedIn == false){
-          alert(error?.responsp.data?.message)
-          navigate('/')
+        console.log("Error block deliverables", error);
+        if(error?.response?.status===401){
+          dispatch(LoginDetails({}));
+              cookies.remove('connect.sid');
+              localStorage.setItem("AlertMessage", JSON.stringify("Session Expired...Please Login Again"))
+            navigate('/')
         }
+        
        
       });
-    }
+    
   },[])
-
+  // useEffect(()=>{
+  //   console.log("Deliverables Data", DeliverableMain)
+  // },[DeliverableMain])
   return (
     <div>
 
@@ -69,18 +91,26 @@ export const Deliverables = () => {
   </thead>
 
   
-  <tbody>
-    <tr>
-      <th scope="row"></th>
-      <td>Report 01</td>
-      <td>Safety Report</td>
-      <td>12345</td>
-      <td>Project 1</td>
-      <td>DC (214117)</td>
-      <td>Engineer Name</td>
+  
+    {DeliverableMain?.project && DeliverableMain?.reports?.length>0 ? <>
+      <tbody>
+    {DeliverableMain.reports.map((report)=>{
+      return(
+        <tr key={report?.file_id}>
+      <td>{report?.report_created_at.slice(0,10)}</td>
+      <td>{report?.report_number}</td>
+      <td>{report?.file_type}</td>
+      <td>{report?.project_number}</td>
+      <td>{DeliverableMain?.project?.project_name}</td>
+      <td>{report?.receiving_customer}</td>
+      <td>{DeliverableMain?.project?.transacting_customer}</td>
       <td>DC</td>
-      <td><span className="badge badge-pill badge-danger">REJECTED</span>
-</td>
+      {report?.report_status==="SENT TO REVIEWER"? <>
+      <td><span className="badge badge-pill badge-primary">IN PROGRESS</span></td>
+      </>:""}
+      {report?.report_status==="VALIDATION FAILED" ? <><td><span className="badge badge-pill badge-danger">REJECTED</span>
+</td></>:""}
+      
       <td>
         
       
@@ -112,9 +142,16 @@ export const Deliverables = () => {
 </td>
     
     </tr>
-  </tbody>
+
+      )
+
+    })}
+      </tbody>
+    </>:<h2 className='text-center'>No Assigned Projects</h2>}
+   
 
 
+{/* 
   <tbody>
     <tr>
       <th scope="row"></th>
@@ -246,7 +283,7 @@ export const Deliverables = () => {
 </td>
     
     </tr>
-  </tbody>
+  </tbody> */}
 
 
 
