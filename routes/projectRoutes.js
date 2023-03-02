@@ -2,6 +2,8 @@ const {express} = require('../configuration/server')
 const projectMethods = require('../service/projectService')
 const  {check,validationResult} = require('express-validator') 
 const Response = require('../service/customResponse')
+const FileType = require('../service/staticData/FileType')
+const StatusType = require('../service/staticData/StatusType')
 
 const projectRoute = express.Router()
 
@@ -39,7 +41,19 @@ projectRoute.get('/search',async(req,res)=>{
 })
 
 projectRoute.get('/:id',async (req,res)=>{
-    const {id} = req.query
+    return await projectMethods.getAllProjectInformation(req,res)
+})
+
+projectRoute.get('/notification/engineer',async (req,res)=>{
+    return await projectMethods.getNotificationsForTheEngineer(req,res)
+})
+
+projectRoute.get('/status/types',async(req,res)=>{
+     return res.json((new Response(200,"SUCCESS","Status Types",await FileType.getFileTypes())).getSuccessObject())
+})
+
+projectRoute.get('/document/types',async (req,res)=>{
+    return res.json((new Response(200,"SUCCESS","Status Types",await StatusType.getAllStatusTypes())).getSuccessObject())
 })
 
 module.exports = projectRoute
