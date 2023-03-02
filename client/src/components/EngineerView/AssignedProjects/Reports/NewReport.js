@@ -66,7 +66,7 @@ export const NewReport=()=>{
 
       method: 'post',
       maxBodyLength: Infinity,
-      url: 'http://localhost:8081/report',
+      url: '/report',
       
       headers:myHeaders,
         data : formData,
@@ -157,7 +157,7 @@ return(
     axios({
       method: 'get',
       maxBodyLength: Infinity,
-        url: 'http://localhost:8081/user/search',
+        url: '/user/search',
         params : data,
       
         credentials: "include", 
@@ -219,7 +219,7 @@ return(
     axios({
       method: 'get',
       maxBodyLength: Infinity,
-        url: 'http://localhost:8081/user/search',
+        url: '/user/search',
         params : data,
       
         credentials: "include", 

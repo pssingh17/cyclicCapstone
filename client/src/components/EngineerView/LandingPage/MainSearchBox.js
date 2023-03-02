@@ -44,7 +44,7 @@ export const MainSearchBox = () => {
     axios({
       method: 'get',
       maxBodyLength: Infinity,
-        url: 'http://localhost:8081/project/search',
+        url: '/project/search',
         params : data,
         headers:myHeaders,
         credentials: "include", 
