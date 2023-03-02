@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import { Header } from "../Common/Header/Header";
 import ComplianceLogos from "../../images/complianceLogosImage.png";
 import './Login.css'
@@ -7,34 +7,27 @@ import { LoginDetails } from "./LoginReducer/LoginSlice";
 import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import axios from 'axios'
-import Alert from 'react-bootstrap/Alert';
-import Button from 'react-bootstrap/Button';
-import Cookies from "universal-cookie";
-import { LoaderStatus } from "../Common/LoaderReducer/LoaderSlice";
-
+import { useCookies } from 'react-cookie';
 
 // import {REACT_APP_URL_BACKEND} from process.env;
 
 export const Login = () => {
   let dispatch = useDispatch()
   let navigate = useNavigate()
-  const cookies = new Cookies()
-  
+  const [cookie, setCookie, removeCookie] = useCookies(['accessToken']);
   const { register, handleSubmit, watch, formState: { errors } } = useForm();
-  const [showGreen, setShowGreen] = useState(false);
-  const [showRed, setShowRed] = useState(false)
-  const [alertValue, setAlertValue] = useState()
+  
   const ULogged = useSelector((state)=>state.Login.value)
 
   const onSubmit = data => {
-    // console.log("Login clicked")
+    console.log("Login clicked")
    
  
     
     // console.log(data)
     var myHeaders = new Headers();
   myHeaders.append("Content-Type", "application/json");
-  myHeaders.append('Access-Control-Allow-Origin', 'http://localhost:8081')
+  // myHeaders.append('Access-Control-Allow-Origin', 'http://localhost:8081')
   myHeaders.append('Access-Control-Allow-Credentials', true)
  
     
@@ -44,7 +37,7 @@ export const Login = () => {
   
         method: 'post',
         
-        url: `http://localhost:8081/user/login`,
+        url: `/user/login`,
         
         data:data, 
         credentials: "include", 
@@ -52,9 +45,9 @@ export const Login = () => {
          headers: myHeaders,
        
       }).then(res=>{
-        // let cookieCheck = cookie?.accessToken
-        // console.log(res.headers)
-        // console.log(res.config)
+        let cookieCheck = cookie?.accessToken
+        console.log(res.headers)
+        console.log(res.config)
       // console.log("res check:",res)
       if(res?.data?.data?.isLoggedIn){
 
@@ -70,47 +63,13 @@ export const Login = () => {
 };
 
  useEffect(()=>{
-  dispatch(LoaderStatus(false))
-  let cookieCheck = cookies.get('connect.sid');
-  // console.log("Cookie Check", cookieCheck)
-  if(ULogged?.is_engineer===true || cookieCheck != undefined){
+  
+  if(ULogged?.is_engineer===true){
     navigate('/engineerView/landingPage')
-  }
-  let AlertMessage = JSON.parse(localStorage.getItem("AlertMessage"))
-  if(AlertMessage != undefined){
-    setShowRed(true)
-    setAlertValue(AlertMessage)
   }
  },[])
 
   return (
-    <>
-     <div className="d-flex justify-content-center">
-     {showGreen?<>
-      <Alert className="col-12 col-md-8 col-lg-6 p-1 d-flex align-items-center justify-content-between" show={showGreen} variant="success" >
-        <p style={{marginBottom:"0"}}>{alertValue}</p>
-        <Button style={{fontSize:"80%"}} onClick={() => 
-          setShowGreen(false)
-          } variant="outline-success">
-            Close
-            </Button>
-      </Alert>
-    </>:<>
-    <Alert className="col-12 col-md-8 col-lg-6 p-1 d-flex align-items-center justify-content-between mx-2" show={showRed} variant="danger" >
-        <p style={{marginBottom:"0"}}>{alertValue}</p>
-        <Button style={{fontSize:"80%"}} onClick={() => {
-          localStorage.removeItem("AlertMessage")
-          setShowRed(false)
-        
-          }} variant="outline-danger" >
-            Close
-            </Button>
-      </Alert>
-      
-      </>
-    
-    }
-    </div>
     <div className="MainLoginHeader">
       <div className="genInfo">
         <p className="text-center my-0" style={{ fontSize: "2rem" }}>
@@ -174,5 +133,5 @@ export const Login = () => {
 
       </div>
     </div>
-</>  );
+  );
 };
