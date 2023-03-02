@@ -1,7 +1,6 @@
 const { BlobServiceClient, StorageSharedKeyCredential,ContainerClient
      } = require("@azure/storage-blob");
      const fs = require('fs')
-     const reportService = require('./reportService')
 
 
 const accountName = "capstoned";
@@ -10,19 +9,6 @@ const accountKey = "DRuhoJNVyxh58M+XRCACtAeHmdXqeboWLZs07NGbPxd7LJR50bfSUHYFU7xd
 // Use StorageSharedKeyCredential with storage account and account key
 // StorageSharedKeyCredential is only available in Node.js runtime, not in browsers
 const sharedKeyCredential = new StorageSharedKeyCredential(accountName, accountKey);
-
-async function getExistingContainer(containerName){
-  try{
-        const client = new ContainerClient(
-          `https://${accountName}.blob.core.windows.net/${containerName}`,
-          sharedKeyCredential
-         )
-         return client;
-
-  }catch(error){
-    console.log("Error in connecting to existing container with name " + containerName + " and error is " + error)
-  }  
-}
 
 
 function getBlobServiceClient(){
@@ -88,10 +74,9 @@ async function uploadBlob(file,containerName,blobName,containerClient){
    }
 }
 
-async function downloadBlob(containerName,blobName,fileName){
-  console.log("Request received to download file in the container " + containerName + " and blob " + blobName + ".")
+async function downloadBlob(path,containerName,blobName,fileName){
    try{
-     const containerClient = await getExistingContainer(containerName)
+     const containerClient = getBlobServiceClient().getContainerClient(containerName)
      const blobClient = containerClient.getBlobClient(blobName)
      await blobClient.downloadToFile(fileName)    
    }catch(error){
@@ -112,4 +97,4 @@ async function deleteContainer(containerName){
 }
 
 
-module.exports = {getAllBlobs,uploadBlob,downloadBlob,deleteContainer,createContainer,getExistingContainer}
+module.exports = {getAllBlobs,uploadBlob,downloadBlob,deleteContainer,createContainer}

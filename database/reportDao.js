@@ -6,10 +6,8 @@ const sequelize = require('../database/DBConnection')
 const { QueryTypes } = require('sequelize');
 const {Op} = require('sequelize')
 const project = require('../models/Project')
-const documentType = require('../models/DocumentType')
-const reportStatus = require('../models/ReportStatus')
 
-async function saveReport(body,userId,documentPresent){
+async function saveReport(body,userId){
 
     var date = new Date()
     date.setMinutes(date.getMinutes()-date.getTimezoneOffset())
@@ -31,9 +29,7 @@ async function saveReport(body,userId,documentPresent){
         receiving_customer : body.receiving_customer,
         reviewer_id : body.reviewer_id,
         created_by : userId,
-        project_number : body.project_number,
-        documents_uploaded:documentPresent,
-        report_name:body.report_name
+        project_number : body.project_number
     })
 
     //console.log(result)
@@ -46,7 +42,7 @@ async function saveReport(body,userId,documentPresent){
 
 
 
-async function saveDocument(userId,reportId,type,blobName,originalName,subTypeId){
+async function saveDocument(userId,reportId,type,blobName,originalName){
 
     var date = new Date()
     date.setMinutes(date.getMinutes()-date.getTimezoneOffset())
@@ -60,7 +56,7 @@ async function saveDocument(userId,reportId,type,blobName,originalName,subTypeId
             created_at : date,
             updated_at : date,
             type:type,
-            sub_type:subTypeId,
+            sub_type:type,
             submitted_by:userId,
             report_id:reportId
         })
@@ -99,8 +95,7 @@ async function getProjectLinkedToReports(reportId,userId){
                         {report_number:{[Op.like]:`${reportId}%`}},
                         {report_number:{[Op.like]:`%${reportId}%`}},
                         {report_number:{[Op.like]:`%${reportId}`}},
-                    ]},
-                    {is_saved:{[Op.eq]:true}}
+                    ]}
                 ],
             },
             attributes : ['report_number'],
@@ -123,66 +118,5 @@ async function getProjectLinkedToReports(reportId,userId){
 
 }
 
-async function getAllReportsBasedOnDocumentType(projectId,screenId,userId){
 
-    
-    let query = `select r.report_number , r.tags , r.comments as 'report_comments' , r.receiving_customer , r.reviewer_id , r.project_number , r.documents_uploaded,
-    r.created_at as 'report_created_at' , d.file_id  , d.original_file_name , d.type as 'file_type' ,
-     d.submitted_by as 'file_uploaded_by', dt.name as 'file_sub_type' , st.name as 'report_status' from report r inner join report_documents d 
-    on r.report_number = d.report_id inner join document_type dt on d.sub_type = dt.id inner join status_type st on
-    st.id = r.status_id where r.project_number=? and r.is_saved=? and d.sub_type in (?) and r.created_by=?`
-
-    try{
-        const result = await sequelize.query(query,
-        {
-            replacements:[projectId,true,screenId,userId],
-            type:QueryTypes.SELECT,
-            raw:true
-        })
-       
-        return result
-
-    }catch(err){
-        console.log("Error in fetching reports and linked documents " + err )
-    }
-
-}
-
-
-async function getReportsWithNoDocumentsUploaded(projectId,userId){
-
-    try{
-
-        let query = `select report_number , tags , comments as 'report_comments' , receiving_customer , reviewer_id , project_number,
-        documents_uploaded, created_at as 'report_created_at' from report  where project_number=? and is_saved=? 
-        and documents_uploaded=? and created_by=?`
-
-        const result = await sequelize.query(query,
-            {
-                replacements:[projectId,true,false,userId],
-                type:QueryTypes.SELECT,
-                raw:true
-            })
-
-       return result
-    }catch(error){
-      console.log("Error in fetching reports with no linked documents " + error)
-    }
-}
-
-
-async function getDocumentBasedOnFileId(fileId){
-    
-    try{
-        const result = await document.findByPk(fileId)
-        return new Response(200,"SUCCESS","",result)
-    }catch(error){
-     console.log(error)
-     return new Response(500,"FAILURE","Unknown error occured.",null)   
-    }
-
-}
-
-
-module.exports = {saveReport,saveDocument,getReportsWithStatusCount,getProjectLinkedToReports,
-    getAllReportsBasedOnDocumentType,getReportsWithNoDocumentsUploaded,getDocumentBasedOnFileId}
+module.exports = {saveReport,saveDocument,getReportsWithStatusCount,getProjectLinkedToReports}

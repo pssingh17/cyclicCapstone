@@ -22,13 +22,13 @@ export const Navbar = () => {
      // console.log(data)
      var myHeaders = new Headers();
      myHeaders.append("Content-Type", "application/json");
-    //  myHeaders.append('Access-Control-Allow-Origin', 'http://localhost:8081')
+     myHeaders.append('Access-Control-Allow-Origin', 'http://localhost:8081')
      myHeaders.append('Access-Control-Allow-Credentials', true)
     axios({
       method: "post",
       maxBodyLength: Infinity,
 
-      url: `/user/logout`,
+      url: `http://localhost:8081/user/logout`,
       credentials: "include", 
       withCredentials:true,
 
@@ -55,15 +55,20 @@ export const Navbar = () => {
  
   useEffect(()=>{
    userLoginCheck().then(res=>{
-    // console.log(res)
+    // console.log("res in navbar",res)
     if(res?.userId?.user?.is_engineer===true || res?.userId?.user?.is_reviewer===true){
       dispatch(LoginDetails(res.userId.user))
     }
-    if(res.isLoggedIn === false){
-      alert(res?.message)
+    if(res.status === 401){
+      cookies.remove('connect.sid')
+          dispatch(LoginDetails({}))
+         localStorage.setItem("AlertMessage", JSON.stringify("Session Expired...Please Login Again"))
       navigate('/')
     }
-  }).catch(err=>{console.log(err)})
+  }).catch(err=>{
+    console.log("error in navbar",err.response)
+    
+  })
   },[])
 //  useEffect(()=>{console.log("Ulogged check", ULogged)},[ULogged])
   

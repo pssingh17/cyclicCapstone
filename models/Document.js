@@ -2,7 +2,6 @@ const sequelize = require('../database/DBConnection')
 const {DataTypes} = require('sequelize')
 const user = require('./User')
 const report = require('./Report')
-const documentType = require('./DocumentType')
 
 const document = sequelize.define('report_documents',{
     file_id:{
@@ -26,7 +25,10 @@ const document = sequelize.define('report_documents',{
     },
     type:{
         type:DataTypes.STRING
-    }  
+    },
+    sub_type:{
+        type:DataTypes.STRING
+    }   
 },{
     tableName:'report_documents',
     timestamps:false
@@ -50,34 +52,7 @@ document.belongsTo(report,{
     onDelete:'CASCADE'
 })
 
-report.hasMany(document,{
-    as:'report_id_fk',
-    foreignKey:{
-        name:'report_id',
-        allowNull:false
-    },
-    onDelete:'CASCADE'
-})
 
-document.belongsTo(documentType,{
-    as:'document_type_fk',
-    foreignKey:{
-        name:'sub_type',
-        allowNull:false
-    },
-    onDelete:'CASCADE'
-})
-
-documentType.hasMany(document,{
-    as:'document_type_fk',
-    foreignKey:{
-        name:'sub_type',
-        allowNull:false
-    },
-    onDelete:'CASCADE'
-})
-
-
-//document.sync({alter:true})
+//document.sync()
 
 module.exports = document

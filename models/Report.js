@@ -11,10 +11,6 @@ const report = sequelize.define('report',{
        primaryKey:true,
        allowNull:false
     },
-    report_name:{
-        type:DataTypes.STRING,
-        allowNull:false
-    },
     issued_at:{
         type:DataTypes.STRING
     },
@@ -43,16 +39,6 @@ const report = sequelize.define('report',{
     is_active:{
         type:DataTypes.BOOLEAN,
         defaultValue:true
-    },
-    documents_uploaded:{
-        type:DataTypes.BOOLEAN,
-        defaultValue:false,
-        allowNull:false
-    },
-    status_id:{
-        type:DataTypes.INTEGER,
-        defaultValue:4,
-        allowNull:false
     }
 },{
     tableName:'report',
@@ -104,8 +90,25 @@ project.belongsTo(report,{
     onDelete:'CASCADE'
 })
 
-//report.sync({alter:true})
-//The possible choices are RESTRICT, CASCADE, NO ACTION, SET DEFAULT and SET NULL.
-module.exports = report
+report.belongsTo(status,{
+    as:'report_status_fk',
+    foreignKey:{
+        name:'status_id',
+        allowNull:false
+    },
+    onDelete:'CASCADE'
+})
 
+status.hasMany(report,{
+    as:'report_status_fk',
+    foreignKey:{
+        name:'status_id',
+        allowNull:false
+    },
+    onDelete:'CASCADE'
+})
+
+//report.sync()
+
+module.exports = report
 

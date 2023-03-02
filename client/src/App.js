@@ -23,15 +23,21 @@ import {EquipmentLog } from "./components/EngineerView/AssignedProjects/Equipmen
 import {Sample } from "./components/EngineerView/AssignedProjects/Sample/Sample";
 import Reviewworks from "./components/ReviewerView/Reviewreports/Reviewworks";
 import ViewReportsScreen from "./components/EngineerView/ReviewReport/ViewReportsScreen";
+import { useSelector } from "react-redux";
 
 
 
-function App(
-
-) {
+function App() {
+  const isLoading = useSelector((state)=>state.LoaderSlice.value)
   
   return (
     <>
+      {isLoading===true?
+    <div className='parentSpinner'>
+  <div id="cover-spin"></div></div>
+     :<>
+     
+     </>}
       <Header />
       <Navbar />
       <Routes>

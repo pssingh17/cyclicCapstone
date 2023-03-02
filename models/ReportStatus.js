@@ -17,6 +17,6 @@ const reportStatus = db.define('status_type',{
     timestamps:false
 })
 
-//reportStatus.sync({alter:true})
+//reportStatus.sync()
 
 module.exports = reportStatus

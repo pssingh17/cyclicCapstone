@@ -294,3 +294,26 @@ border: 1px solid #C3C3C3;
   .createProjectFolderBoxBorder{
     width: 100%;
   }
+  .parentSearchResult{
+    position: relative;
+  }
+
+  .searchResults{
+    position: absolute;
+    top: 2rem;
+    background-color: white;
+    border: 1.5px solid #007D99;
+    z-index: 9;
+    width: 100%;
+  }
+  .searchItem{
+    border-bottom: 1px solid grey ;
+    color: black;
+    padding: 0.4rem;
+  }
+
+  .searchItem:hover{
+
+    color: blue;
+    cursor:pointer
+  }
