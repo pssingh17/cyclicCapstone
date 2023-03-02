@@ -18,13 +18,10 @@ app.use('/user',userRoutes)
 app.use('/project',projectRoutes)
 app.use('/report',reportRoute)
 
-// app.get("/*", function (req, res) {
-//   res.sendFile(path.resolve(__dirname, '../client/build', 'index.html'));
-// })
-app.get('*', function (req, res) {
-  const index = path.join(__dirname, 'build', 'index.html');
-  res.sendFile(index);
-});
+app.get("/*", function (req, res) {
+  res.sendFile(path.resolve(__dirname, '../client/build', 'index.html'));
+})
+
 app.listen(8081,()=>{
     console.log("Server up and running at port 8081.")
 })

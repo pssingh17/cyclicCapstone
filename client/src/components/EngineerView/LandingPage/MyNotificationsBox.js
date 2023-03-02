@@ -17,7 +17,7 @@ export const MyNotificationsBox = () => {
     axios({
      method:'get',
      maxBodyLength: Infinity,
-     url: 'http://localhost:8081/project/notifications',
+     url: '/project/notifications',
      headers:myHeaders
     }).then(res=>{
     //  dispatch(LoaderStatus(false))
