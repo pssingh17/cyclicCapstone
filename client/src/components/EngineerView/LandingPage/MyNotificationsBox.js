@@ -17,11 +17,13 @@ export const MyNotificationsBox = () => {
     axios({
      method:'get',
      maxBodyLength: Infinity,
-     url: '/project/notifications',
+     url: 'http://localhost:8081/project/notification/engineer',
+     credentials: "include", 
+     withCredentials:true,
      headers:myHeaders
     }).then(res=>{
     //  dispatch(LoaderStatus(false))
-     console.log("response form MyNotifications Box", res.data)
+    //  console.log("response form MyNotifications Box", res.data)
     if(res?.data?.data.length>0){
        setNotificationData(res?.data?.data)
     }
@@ -38,16 +40,16 @@ export const MyNotificationsBox = () => {
           <div><a href="#">View All</a></div>
         </div>
         <div className="customBody">
-          <div className="customItems">
+          <div className="customItems flex-column">
             {notificationData?.length>0 ? <>
             {notificationData.map((data)=>{
-              return(<>
-                <div>Review {notificationData?.report_status} - {notificationData?.report_number}</div>
+              return(<div className='d-flex justify-content-between align-items-center' key={data?.report_number}>
+                <div>Review <b>{data?.report_status}</b> - {data?.report_name}</div>
             <div className="custominfo">
               <div className=''><a href='#'>updates@dc.i</a></div>
-              <div className=''>{notificationData?.report_created_at.slice(0,10)}</div>
+              <div className=''>{data?.report_created_at}</div>
             </div>
-            </>  )
+            </div>  )
             })}
             </>:""}
             

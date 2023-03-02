@@ -87,3 +87,6 @@
     cursor: pointer;
     color: rgb(50, 50, 249);
 }
+.customItems{
+    font-size: 0.7rem;
+}

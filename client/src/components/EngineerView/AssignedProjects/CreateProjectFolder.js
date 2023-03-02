@@ -26,7 +26,7 @@ const CreateProjectFolder = () => {
     axios({
       method: 'post',
       maxBodyLength: Infinity,
-        url: '/project/save',
+        url: 'http://localhost:8081/project/save',
         headers:myHeaders,
         data : data,
         credentials: "include", 
@@ -126,7 +126,7 @@ const CreateProjectFolder = () => {
               axios({
                 method: 'get',
                 maxBodyLength: Infinity,
-                  url: '/user/merchant',
+                  url: 'http://localhost:8081/user/merchant',
                   params : data,
                 
                   credentials: "include", 
@@ -186,7 +186,7 @@ const CreateProjectFolder = () => {
               axios({
                 method: 'get',
                 maxBodyLength: Infinity,
-                  url: '/user/search',
+                  url: 'http://localhost:8081/user/search',
                   params : data,
                 
                   credentials: "include", 

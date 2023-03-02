@@ -28,7 +28,7 @@ export const SupportingDocuments = () => {
       axios({
         method: 'get',
         maxBodyLength: Infinity,
-        url: '/project/2897561PF2',
+        url: 'http://localhost:8081/project/2897561PF2',
         headers:myHeaders,
         credentials: "include", 
         withCredentials:true,
@@ -73,15 +73,15 @@ export const SupportingDocuments = () => {
 <table className="table customTableMArgin">
   <thead>
     <tr>
-      <th scope="col">Date created</th>
-      <th scope="col">Record Name</th>
-      <th scope="col">Record Type</th>
-      <th scope="col">Project Number</th>
-      <th scope="col">Project Name</th>
-      <th scope="col">Description</th>
-      <th scope="col">Responsibility</th>
-      <th scope="col">Work Order</th>
-      <th scope="col"></th>
+      <th scope="col" style={{width:"110px"}}>Date created</th>
+      <th scope="col" style={{width:"110px"}}>Record Name</th>
+      <th scope="col" style={{width:"110px"}}>Record Type</th>
+      <th scope="col" style={{width:"110px"}}>Project Number</th>
+      <th scope="col" style={{width:"110px"}}>Project Name</th>
+      <th scope="col" style={{width:"110px"}}>Description</th>
+      <th scope="col" style={{width:"110px"}}>Responsibility</th>
+      <th scope="col" style={{width:"110px"}}>Work Order</th>
+      <th scope="col" ></th>
     </tr>
   </thead>
 

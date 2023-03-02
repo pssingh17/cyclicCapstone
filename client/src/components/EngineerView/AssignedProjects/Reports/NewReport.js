@@ -1,5 +1,7 @@
 import './NewReport.css'
-import { useForm} from "react-hook-form";
+import Select from "react-select";
+import { useForm, Controller } from "react-hook-form";
+
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import Alert from 'react-bootstrap/Alert';
@@ -14,7 +16,7 @@ import debounce from 'debounce'
 
 
 export const NewReport=()=>{
-  const { register, handleSubmit , formState: { errors }} = useForm();
+  const { register, handleSubmit, control , formState: { errors }} = useForm();
   const[searchResults, setSearchResults] = useState([])
   const[searchResults1, setSearchResults1] = useState([])
   const navigate = useNavigate()
@@ -23,6 +25,16 @@ export const NewReport=()=>{
   const [showRed, setShowRed] = useState(false)
   const [alertValue, setAlertValue] = useState()
   const cookies = new Cookies()
+  const [optionValue, setOptionValue] = useState(null);
+  let options = [
+    { label: "FINANCIAL", value: "2" },
+    { label: "SUPPORTING DOCUMENTS", value: "3" },
+    { label: "EQUIPMENT LOG", value: "4" },
+    { label: "SAMPLES", value: "5" },
+    { label: "OTHER", value: "6" },
+    { label: "CORRESPONDENTS", value: "12" },
+   
+  ];
   
   const onSubmit = ((data) => {
     let formData = new FormData()
@@ -35,8 +47,8 @@ export const NewReport=()=>{
     formData.append('receiving_customer', data.receiving_customer);
     formData.append('reviewer_id', data.reviewer_id);
     formData.append('project_number', data.project_number);;
-    formData.append('report_type', '2');
-    formData.append('certificate_type', '12');
+    formData.append('report_type', data.report_type.value);
+    formData.append('certificate_type', data.certificate_type.value);
     formData.append('report_name', data.report_name);
     formData.append('is_saved', 'true');
     formData.append("report",data.report[0])
@@ -54,7 +66,7 @@ export const NewReport=()=>{
 
       method: 'post',
       maxBodyLength: Infinity,
-      url: '/report',
+      url: 'http://localhost:8081/report',
       
       headers:myHeaders,
         data : formData,
@@ -66,7 +78,7 @@ export const NewReport=()=>{
       dispatch(LoaderStatus(false))
       if(res?.data?.statusCode===200){
         setShowGreen(true)
-        setAlertValue(res?.message)
+        setAlertValue(res?.data?.message)
       }
       else{
         setShowRed(true)
@@ -75,8 +87,8 @@ export const NewReport=()=>{
        
       })
       .catch(error=>{
-        console.log("Error block equipment log", error);
-        if(error?.response?.status===401){
+        console.log("Error block new reports", error);
+        if(error?.code==="ERR_NETWORK"){
           dispatch(LoginDetails({}));
               cookies.remove('connect.sid');
               localStorage.setItem("AlertMessage", JSON.stringify("Session Expired...Please Login Again"))
@@ -145,7 +157,69 @@ return(
     axios({
       method: 'get',
       maxBodyLength: Infinity,
-        url: '/user/search',
+        url: 'http://localhost:8081/user/search',
+        params : data,
+      
+        credentials: "include", 
+        withCredentials:true,
+    })
+    .then(function (response) {
+      console.log(response.data);
+      if(response.data?.data.length>0){
+
+        setSearchResults(response.data?.data)
+      }
+      else{
+        setSearchResults([])
+      }
+     
+    })
+    .catch(function (error) {
+      console.log("Error block", error);
+     
+    });
+  }, 800)}
+  />
+  <div className='searchResultsContainer'>
+            {searchResults?.length>0? 
+              <div className='searchResults'>
+            {searchResults?.length>0? searchResults.map((result)=>{
+             
+                
+                return <div key={result?.id} className='searchItem' onClick={()=>{
+                  document.getElementById("receiving_customer").value = result.id;
+                  document.getElementById("receiving_customer").focus();
+                  setSearchResults([])
+                }}>{result?.id}- {result?.name}</div>
+                
+              
+            }):""
+          }</div>:""}
+          </div>
+
+</div>
+</div>
+ 
+<div>
+    <label className="custom_label">Report Standards</label><br></br>
+    <label className="custom_label1">*Click(+) to add some Standards</label>
+</div>
+
+
+<div className="mb-3 customColor">
+  <label htmlFor="availableReviewers" className="form-label">*Available Reviewers</label>
+  <div className='parentSearchResult'>
+  <input type="availableReviewers" className="form-control custom_txtbox" id="reviewer_id" {...register("reviewer_id",{ required: true})}
+   onChange={debounce(async (e) => {
+    let str = e.target.value
+    console.log("str check", str)
+    let data={
+      name: str
+    }
+    axios({
+      method: 'get',
+      maxBodyLength: Infinity,
+        url: 'http://localhost:8081/user/search',
         params : data,
       
         credentials: "include", 
@@ -168,15 +242,15 @@ return(
     });
   }, 800)}
   />
-  <div className='searchResultsContainer'>
+   <div className='searchResultsContainer'>
             {searchResults1?.length>0? 
               <div className='searchResults'>
             {searchResults1?.length>0? searchResults1.map((result)=>{
              
                 
                 return <div key={result?.id} className='searchItem' onClick={()=>{
-                  document.getElementById("receiving_customer").value = result.id;
-                  document.getElementById("receiving_customer").focus();
+                  document.getElementById("reviewer_id").value = result.id;
+                  document.getElementById("reviewer_id").focus();
                   setSearchResults1([])
                 }}>{result?.id}- {result?.name}</div>
                 
@@ -184,19 +258,7 @@ return(
             }):""
           }</div>:""}
           </div>
-
-</div>
-</div>
- 
-<div>
-    <label className="custom_label">Report Standards</label><br></br>
-    <label className="custom_label1">*Click(+) to add some Standards</label>
-</div>
-
-
-<div className="mb-3 customColor">
-  <label htmlFor="availableReviewers" className="form-label">*Available Reviewers</label>
-  <input type="availableReviewers" className="form-control custom_txtbox" id="availableReviewers" {...register("reviewer_id",{ required: true})}/>
+          </div>
 </div>
 <div className="mb-3 customColor">
   <textarea className="form-control custom_txtbox" id="exampleFormControlTextarea1" placeholder="Review Comments" rows="3" {...register("comments")}></textarea>
@@ -220,9 +282,28 @@ return(
 
 
 <div className="container">
-    <input type="file" className ="upload_hide" id="uploadReport"/>
+    
     <label htmlFor="uploadReport" className="upload_label">
       <p className='mb-0'>Report</p>
+      <div className='d-flex justify-content-center align-items-center'>
+        <p className='m-0 mr-3'>Report Type</p>
+      <Controller style={{width:"200px"}}
+        name="report_type"
+        control={control}
+        render={({ field }) => (
+        <Select  
+            // defaultValue={options[0]}
+            {...field}
+            isClearable
+            isSearchable={false}
+            className="react-dropdown"
+            classNamePrefix="dropdown"
+            options={options}
+        />
+        )}
+    />
+    </div>
+    <p>{errors.status?.message || errors.status?.label.message}</p>
       <input className='choose_file'  type="file" {...register("report",{required: true})} />
         <i className="fas fa-cloud-upload-alt"/>
         <p className="drag_text">Max File Size: 25MB: Max Files: 1/Type: .doc,.docx,.xls,.xlsx,.xlsm,.xlsb</p>
@@ -233,7 +314,26 @@ return(
     
     <label htmlFor="uploadReport" className="upload_label">
     <p className='mb-0'>Certificate</p>
+    <div className='d-flex justify-content-center align-items-center'>
+        <p className='m-0 mr-3'>Certificate Type</p>
+      <Controller  style={{width:"200px !important"}}
+        name="certificate_type"
+        control={control}
+        render={({ field }) => (
+        <Select 
+            // defaultValue={options[0]}
+            {...field}
+            isClearable
+            isSearchable={false}
+            className="react-dropdown"
+            classNamePrefix="dropdown"
+            options={options}
+        />
+        )}
+    />
+    </div>
     <input  type="file" className='choose_file' {...register("certificate",{required: true})} />
+    
         <i className="fas fa-cloud-upload-alt"/>
         <p className="drag_text">Max File Size: 25MB: Max Files: 1/Type: .doc,.docx,.xls,.xlsx,.xlsm,.xlsb</p>
     </label>

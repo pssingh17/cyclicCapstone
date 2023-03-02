@@ -7,7 +7,7 @@ export const userLoginCheck = async () => {
     var config = {
         method: 'get',
       maxBodyLength: Infinity,
-        url: '/user',
+        url: 'http://localhost:8081/user',
         credentials: "include", 
         withCredentials:true,
       };

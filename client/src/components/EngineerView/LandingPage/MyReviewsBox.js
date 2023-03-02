@@ -17,7 +17,9 @@ export const MyReviewsBox = () => {
     axios({
      method:'get',
      maxBodyLength: Infinity,
-     url: '/report',
+     url: 'http://localhost:8081/report',
+     credentials: "include", 
+     withCredentials:true,
      headers:myHeaders
     }).then(res=>{
     //  dispatch(LoaderStatus(false))

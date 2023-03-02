@@ -25,7 +25,7 @@ export const Correspondence = () => {
     axios({
       method: "get",
       maxBodyLength: Infinity,
-      url: "/project/2897561PF2",
+      url: "http://localhost:8081/project/2897561PF2",
       headers: myHeaders,
       credentials: "include",
       withCredentials: true,
@@ -66,14 +66,14 @@ export const Correspondence = () => {
       <table className="table customTableMArgin">
         <thead>
           <tr>
-            <th scope="col">Date created</th>
-            <th scope="col">Record Name</th>
-            <th scope="col">Record Type</th>
-            <th scope="col">Project Number</th>
-            <th scope="col">Project Name</th>
-            <th scope="col">Description</th>
-            <th scope="col">Responsibility</th>
-            <th scope="col">Work Order</th>
+            <th scope="col" style={{width:"120px"}}>Date created</th>
+            <th scope="col" style={{width:"120px"}}>Record Name</th>
+            <th scope="col" style={{width:"120px"}}>Record Type</th>
+            <th scope="col" style={{width:"120px"}}>Project Number</th>
+            <th scope="col" style={{width:"120px"}}>Project Name</th>
+            <th scope="col" style={{width:"120px"}}>Description</th>
+            <th scope="col" style={{width:"120px"}}>Responsibility</th>
+            <th scope="col" style={{width:"120px"}}>Work Order</th>
             <th scope="col"></th>
           </tr>
         </thead>

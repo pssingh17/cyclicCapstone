@@ -27,7 +27,7 @@ export const EquipmentLog = () => {
     axios({
       method: "get",
       maxBodyLength: Infinity,
-      url: "/project/2897561PF2",
+      url: "http://localhost:8081/project/2897561PF2",
       headers: myHeaders,
       credentials: "include",
       withCredentials: true,
@@ -67,14 +67,14 @@ export const EquipmentLog = () => {
       <table className="table customTableMArgin">
         <thead>
           <tr>
-            <th scope="col">Date created</th>
-            <th scope="col">Record Name</th>
-            <th scope="col">Record Type</th>
-            <th scope="col">Project Number</th>
-            <th scope="col">Project Name</th>
-            <th scope="col">Description</th>
-            <th scope="col">Responsibility</th>
-            <th scope="col">Work Order</th>
+            <th scope="col" style={{width:"120px"}}>Date created</th>
+            <th scope="col" style={{width:"120px"}}>Record Name</th>
+            <th scope="col" style={{width:"120px"}}>Record Type</th>
+            <th scope="col" style={{width:"120px"}}>Project Number</th>
+            <th scope="col" style={{width:"120px"}}>Project Name</th>
+            <th scope="col" style={{width:"120px"}}>Description</th>
+            <th scope="col" style={{width:"120px"}}>Responsibility</th>
+            <th scope="col" style={{width:"120px"}}>Work Order</th>
             <th scope="col"></th>
           </tr>
         </thead>
@@ -133,7 +133,7 @@ export const EquipmentLog = () => {
                         fill="none"
                         xmlns="http://www.w3.org/2000/svg"
                       >
-                        <g clip-path="url(#clip0_106_9042)">
+                        <g clipPath="url(#clip0_106_9042)">
                           <path
                             d="M9.16699 3.3335H3.33366C2.89163 3.3335 2.46771 3.50909 2.15515 3.82165C1.84259 4.13421 1.66699 4.55814 1.66699 5.00016V16.6668C1.66699 17.1089 1.84259 17.5328 2.15515 17.8453C2.46771 18.1579 2.89163 18.3335 3.33366 18.3335H15.0003C15.4424 18.3335 15.8663 18.1579 16.1788 17.8453C16.4914 17.5328 16.667 17.1089 16.667 16.6668V10.8335"
                             stroke="#007D99"
