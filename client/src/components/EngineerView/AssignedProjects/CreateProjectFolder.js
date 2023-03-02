@@ -1,5 +1,5 @@
 import axios from 'axios';
-import React, { useEffect, useState } from 'react'
+import React from 'react'
 import { useDispatch } from 'react-redux';
 import { useForm, SubmitHandler } from "react-hook-form";
 import "./AssignedProjects.css"
@@ -9,16 +9,13 @@ import debounce from 'debounce'
 const CreateProjectFolder = () => {
   const { register, handleSubmit,getValues , trigger, formState: { errors }} = useForm();
   const navigate = useNavigate()
-  const[searchResults, setSearchResults] = useState([])
-  const[searchResults1, setSearchResults1] = useState([])
-  const [searchItemSet, SetSearchItemSet] = useState()
   const dispatch = useDispatch()
   // const watchFields = watch(["showAge", "number"])
   const onSubmit= ((data) => {
     console.log(data)
     var myHeaders = new Headers();
     myHeaders.append("Content-Type", "application/json");
-    myHeaders.append('Access-Control-Allow-Origin', 'http://localhost:8081')
+    // myHeaders.append('Access-Control-Allow-Origin', 'http://localhost:8081')
     myHeaders.append('Access-Control-Allow-Credentials', true)
     
    
@@ -55,9 +52,6 @@ const CreateProjectFolder = () => {
     console.log("Close CLicked")
     navigate('/engineerView/landingPage')
   }
-  useEffect(()=>{
-    console.log("search results check", searchResults)
-  },[searchResults])
   return (
 
     <>
@@ -115,8 +109,8 @@ const CreateProjectFolder = () => {
           <div className="lefttb3">
             <section>*Transacting Customer</section>
             <div className="w5 custom-debounce-container">
-              <div className='parentSearchResult'>
-            <input  className='createProjectFolderBoxBorder' type="Text" placeholder="Transacting Customer" autoComplete='off' id="transacting_customer"  {...register("transacting_customer",{ minLength:2, maxLength: 20 })}
+              <div>
+            <input  className='createProjectFolderBoxBorder' type="Text" placeholder="Transacting Customer"  {...register("transacting_customer",{ minLength:2, maxLength: 20 })}
             onChange={debounce(async (e) => {
               let str = e.target.value
               console.log("str check", str)
@@ -134,13 +128,6 @@ const CreateProjectFolder = () => {
               })
               .then(function (response) {
                 console.log(response.data);
-                if(response.data?.data.length>0){
-
-                  setSearchResults(response.data?.data)
-                }
-                else{
-                  setSearchResults([])
-                }
                
               })
               .catch(function (error) {
@@ -149,22 +136,7 @@ const CreateProjectFolder = () => {
               });
             }, 800)}
             ></input>
-            <div className='searchResultsContainer'>
-            {searchResults?.length>0? 
-              <div className='searchResults'>
-            {searchResults?.length>0? searchResults.map((result)=>{
-             
-                
-                return <div className='searchItem' onClick={()=>{
-                  document.getElementById("transacting_customer").value = result.id;
-                  document.getElementById("transacting_customer").focus();
-                  setSearchResults([])
-                }}>{result?.id}- {result?.name}</div>
-                
-              
-            }):""
-          }</div>:""}
-          </div>
+            <div className='createProjectFolderBoxBorder'>results</div>
             </div>
             <button className="btn btn-dark createProjectFolderBoxBorder align-self-start" onClick={(e)=>{e.preventDefault()
             console.log("Find custmer clcik")
@@ -175,56 +147,8 @@ const CreateProjectFolder = () => {
           <div className="lefttb4">
             <section>*Report Recieving Customer</section>
             <div className="w6 custom-debounce-container">
-              <div className='parentSearchResult'>
-            <input type="Text" className='createProjectFolderBoxBorder' placeholder="Report Receiving Customer" id='receiving_customer'  {...register("receiving_customer",{ minLength:2, maxLength: 20 })}
-             onChange={debounce(async (e) => {
-              let str = e.target.value
-              console.log("str check", str)
-              let data={
-                name: str
-              }
-              axios({
-                method: 'get',
-                maxBodyLength: Infinity,
-                  url: '/user/search',
-                  params : data,
-                
-                  credentials: "include", 
-                  withCredentials:true,
-              })
-              .then(function (response) {
-                console.log(response.data);
-                if(response.data?.data.length>0){
-
-                  setSearchResults1(response.data?.data)
-                }
-                else{
-                  setSearchResults1([])
-                }
-               
-              })
-              .catch(function (error) {
-                console.log("Error block", error);
-               
-              });
-            }, 800)}
-            ></input>
-            <div className='searchResultsContainer'>
-            {searchResults1?.length>0? 
-              <div className='searchResults'>
-            {searchResults1?.length>0? searchResults1.map((result)=>{
-             
-                
-                return <div className='searchItem' onClick={()=>{
-                  document.getElementById("receiving_customer").value = result.id;
-                  document.getElementById("receiving_customer").focus();
-                  setSearchResults1([])
-                }}>{result?.id}- {result?.name}</div>
-                
-              
-            }):""
-          }</div>:""}
-          </div>
+              <div>
+            <input type="Text" className='createProjectFolderBoxBorder' placeholder="Report Receiving Customer"  {...register("receiving_customer",{ minLength:2, maxLength: 20 })} ></input>
             </div>
             <button className="btn btn-dark createProjectFolderBoxBorder" onClick={(e)=>{e.preventDefault()
             console.log("Find custmer clcik")
@@ -272,13 +196,23 @@ const CreateProjectFolder = () => {
           </div>
 
 
+          <div className="righttb3">
+          <section>*Project Type</section>
+          <div className='moveright1'>
+          <section> *Project Number</section></div></div>
+          
           
           
         
 
      
 
-        
+          <div className="w3">
+            <input className='createProjectFolderBoxBorder' type="Text" placeholder="Enter Purchase Type"  {...register("projectType2",)}></input>
+            <div className="w4">
+            <input className='createProjectFolderBoxBorder' type="Text" placeholder="Enter Purchase Number" {...register("projectNumber2",)} ></input>
+          </div></div>
+
 
         
           <div className="righttb4">

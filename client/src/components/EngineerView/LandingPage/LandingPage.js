@@ -11,45 +11,27 @@ import axios from "axios";
 import { useCookies } from "react-cookie";
 import { userLoginCheck } from "../../../helpers/userLoginCheck";
 import { LoginDetails } from "../../Login/LoginReducer/LoginSlice";
-import { LoaderStatus } from "../../Common/LoaderReducer/LoaderSlice";
-
-import Cookies from "universal-cookie";
 
 export const LandingPage = () => {
   const ULogged = useSelector((state)=>state.Login.value)
   const navigate = useNavigate()
-  const cookies = new Cookies()
- 
+  const [cookies, setCookie, removeCookie] = useCookies(['connect.sid']);
  
   let dispatch = useDispatch()
   useEffect(()=>{
-    dispatch(LoaderStatus(true))
-   userLoginCheck().then(res=>{
-    // console.log("landing page ulog check",res)
-    dispatch(LoaderStatus(false))
-    if(res?.data?.isLoggedIn===false){
-      cookies.remove('connect.sid')
-      dispatch(LoginDetails({}))
-      localStorage.setItem("AlertMessage", JSON.stringify("Session Expired...Please Login Again"))
-      return navigate('/')
+   userLoginCheck().then(res=>{console.log("landing page ulog check",res)
+    if(res?.response?.data?.isLoggedIn===false){
+      alert("Login again")
+      navigate('/')
     }
   }).catch(err=>{
     console.log("landing page err ",err)
-    if(err?.response?.status===401){
-      dispatch(LoginDetails({}));
-          cookies.remove('connect.sid')
-          localStorage.setItem("AlertMessage", JSON.stringify("Session Expired...Please Login Again"))
-        navigate('/')
-    }
-  
+    navigate('/')
    })
- 
-
    },[])
  
   return (
     <>
-   
     {ULogged?.is_engineer===true ?
    
     <>
