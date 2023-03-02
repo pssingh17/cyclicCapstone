@@ -124,3 +124,8 @@ body{
     animation: spin .8s linear infinite;
 }
 }
+
+.customDC-color{
+  background-color:#21B6D7 !important;
+  color: white !important;
+}

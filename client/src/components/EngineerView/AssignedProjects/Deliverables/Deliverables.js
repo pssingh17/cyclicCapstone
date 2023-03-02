@@ -6,13 +6,29 @@ import { DeliverablesDetails } from './DeliverablesReducer/Deliverables'
 import {LoaderStatus} from '../../../Common/LoaderReducer/LoaderSlice'
 import Cookies from 'universal-cookie'
 import { LoginDetails } from '../../../Login/LoginReducer/LoginSlice'
+
 export const Deliverables = () => {
   let navigate = useNavigate()
   const dispatch = useDispatch()
   const cookies = new Cookies()
+  const [DeliverableDataState, setDeliverablesDataState]= useState()
+  const [arrayPageState, setArrayPageState] = useState(1)
 
   const DeliverableMain = useSelector((state) => state.Deliverables.value);
-  
+  const nextPage = ()=>{
+    let max = Math.ceil(DeliverableDataState?.length/4)
+    // console.log("Max", max)
+    if(arrayPageState<max){
+
+      setArrayPageState(arrayPageState+1)
+    }
+  }
+  const prevPage = ()=>{
+    if(arrayPageState>1){
+
+      setArrayPageState(arrayPageState-1)
+    }
+  }
   useEffect(()=>{
     dispatch(LoaderStatus(true))
     // let project_name = JSON.parse(localStorage.getItem("ProjectName"))
@@ -37,6 +53,7 @@ export const Deliverables = () => {
         // console.log("Response in deliverables",response.data);
         if(response?.data?.data?.project){
           dispatch(DeliverablesDetails(response?.data?.data))
+          setDeliverablesDataState(response?.data?.data?.reports)
           dispatch(LoaderStatus(false))
         }
         else{console.log("no projects yet")
@@ -58,9 +75,8 @@ export const Deliverables = () => {
       });
     
   },[])
-  // useEffect(()=>{
-  //   console.log("Deliverables Data", DeliverableMain)
-  // },[DeliverableMain])
+
+  
   return (
     <div>
 
@@ -92,9 +108,10 @@ export const Deliverables = () => {
 
   
   
-    {DeliverableMain?.project && DeliverableMain?.reports?.length>0 ? <>
+    {DeliverableMain?.project && DeliverableDataState?.length>0 ? <>
       <tbody>
-    {DeliverableMain.reports.map((report)=>{
+        
+    {DeliverableDataState.slice((arrayPageState-1)*4,arrayPageState* 4).map((report)=>{
       return(
         <tr key={report?.file_id}>
       <td>{report?.report_created_at.slice(0,10)}</td>
@@ -291,7 +308,11 @@ export const Deliverables = () => {
 
 
 </table>
-
+ {DeliverableMain?.reports?.length>4 ? <div className='d-flex justify-content-center'>
+      <button className='btn customDC-color m-2' onClick={prevPage}>Previous Page</button>
+      <button className='btn customDC-color m-2' onClick={nextPage}>Next Page</button>
+      </div>:""}  
+    
 </div>
 
   )

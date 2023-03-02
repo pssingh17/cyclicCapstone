@@ -24,7 +24,7 @@ export const MyReviewsBox = () => {
     }).then(res=>{
     //  dispatch(LoaderStatus(false))
     //  console.log("response form report count MyreviewBox", res.data)
-    if(res?.data?.data.length>0){
+    if(res?.data?.data?.length>0){
        setReportCountData(res?.data?.data)
     }
    })

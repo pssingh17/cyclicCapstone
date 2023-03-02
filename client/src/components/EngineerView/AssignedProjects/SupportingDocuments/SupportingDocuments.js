@@ -91,8 +91,8 @@ export const SupportingDocuments = () => {
       {SupportingDocumentsData?.project && SupportingDocumentsData?.reports.length>0 ? <>
       {SupportingDocumentsData.reports.map(data=>{
         return(
-          <tr key={data?.report_number}>
-                <th>{data?.report_created_at.slice(0,10)}</th>
+          <tr key={data?.file_id}>
+                <td>{data?.report_created_at.slice(0,10)}</td>
       <td>{data?.original_file_name}</td>
       <td>{data?.file_type}</td>
       <td>{SupportingDocumentsData?.project?.project_number}</td>
@@ -101,7 +101,37 @@ export const SupportingDocuments = () => {
       <td>{data?.reviewer_id}</td>
       <td>{data?.report_comments}</td>
       <td>
-      <svg className='m-1' width="20" height="17" viewBox="0 0 20 17" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <svg className='m-1' width="20" height="17" viewBox="0 0 20 17" fill="none" xmlns="http://www.w3.org/2000/svg" style={{cursor:"pointer"}}  onClick={()=>{
+            var myHeaders = new Headers();
+            myHeaders.append("Content-Type", "application/json");
+            myHeaders.append('Access-Control-Allow-Origin', 'http://localhost:8081')
+            myHeaders.append('Access-Control-Allow-Credentials', true)
+           
+              axios({
+                method: 'get',
+                maxBodyLength: Infinity,
+                url: `/report/download/${data?.file_id}`,
+                headers:myHeaders,
+                credentials: "include", 
+                withCredentials:true,
+  
+                
+              })
+              .then(function (response) {
+               console.log(response)
+                
+              })
+              .catch(function (error) {
+                console.log("Error block financials", error);
+                if(error?.response?.status===401){
+                  dispatch(LoginDetails({}));
+                      cookies.remove('connect.sid');
+                      localStorage.setItem("AlertMessage", JSON.stringify("Session Expired...Please Login Again"))
+                    navigate('/')
+                }
+               
+              });
+        }}>
 <path d="M19 11V14.3333C19 14.7754 18.7893 15.1993 18.4142 15.5118C18.0391 15.8244 17.5304 16 17 16H3C2.46957 16 1.96086 15.8244 1.58579 15.5118C1.21071 15.1993 1 14.7754 1 14.3333V11" stroke="#007D99" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
 <path d="M5 6.8335L10 11.0002L15 6.8335" stroke="#007D99" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
 <path d="M10 11V1" stroke="#007D99" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
