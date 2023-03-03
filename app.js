@@ -7,7 +7,8 @@ const { dirname } = require('path')
 const appDir = dirname(require.main.filename)
 const path = require('path')
 console.log("path : " + appDir)
-app.use(express.static(path.join(__dirname, "./client/build")));
+
+app.use(express.static(path.join(__dirname, "./client/build")))
 
 app.use('/user',userRoutes)
 app.use('/project',projectRoutes)
@@ -26,6 +27,7 @@ async function createStaticFolders(){
 }
 
 createStaticFolders()
+
 app.get("/*", function (req, res) {
   res.sendFile(path.resolve(__dirname, './client/build', 'index.html'));
 })
