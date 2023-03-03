@@ -17,7 +17,7 @@ export const MyNotificationsBox = () => {
     axios({
      method:'get',
      maxBodyLength: Infinity,
-     url: '/project/notification/engineer',
+     url: '/project/notifications',
      credentials: "include", 
      withCredentials:true,
      headers:myHeaders
