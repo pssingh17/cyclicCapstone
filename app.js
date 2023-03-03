@@ -3,6 +3,8 @@ const userRoutes = require('./routes/login')
 const projectRoutes = require('./routes/projectRoutes')
 const reportRoute = require('./routes/reportRoutes')
 const path = require('path')
+const fs = require('fs')
+const { dirname } = require('path')
 
 app.use(express.static(path.join(__dirname, "./client/build")));
 // app.get("*", function (req, res) {
