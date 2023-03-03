@@ -44,7 +44,7 @@ export const Login = () => {
   
         method: 'post',
         
-        url: `http://localhost:8081/user/login`,
+        url: `/user/login`,
         
         data:data, 
         credentials: "include", 

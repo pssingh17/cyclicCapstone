@@ -26,7 +26,7 @@ export const AssignedProjectsBox = () => {
     axios({
      method:'get',
      maxBodyLength: Infinity,
-     url: `http://localhost:8081/project`,
+     url: `/project`,
      credentials: "include", 
      withCredentials:true,
      params:{
