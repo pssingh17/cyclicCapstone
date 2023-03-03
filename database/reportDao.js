@@ -74,11 +74,10 @@ async function saveDocument(userId,reportId,type,blobName,originalName,subTypeId
     } 
 }
 
-async function getReportsWithStatusCount(userId){
+async function getReportsWithStatusCount(){
     try{
         const users = await sequelize.query("select count(*) as 'count' , r.status_id as 'statusId' , s.name as 'statusName'" + 
-        "from report r inner join status_type s on r.status_id = s.id where r.created_by=? group by status_id", 
-        { type: QueryTypes.SELECT , raw:true ,replacements:[userId]});
+        "from report r inner join status_type s on r.status_id = s.id group by status_id", { type: QueryTypes.SELECT , raw:true });
 
         return new Response(200,"SUCCESS","Engineer Reports Status Count",users)
     }catch(error){
@@ -124,25 +123,19 @@ async function getProjectLinkedToReports(reportId,userId){
 
 }
 
-async function getAllReportsBasedOnDocumentType(projectId,screenId,req){
+async function getAllReportsBasedOnDocumentType(projectId,screenId,userId){
 
-    const {limit,offset} = getLimitAndOffset(req)
-    let alterQuery = null
-    const isReviewer = req.user.is_reviewer
-    if(isReviewer){
-      alterQuery = `and r.reviewer_id='${req.user.userId}'`
-    }
     
     let query = `select r.report_number , r.tags , r.comments as 'report_comments' , r.receiving_customer , r.reviewer_id , r.project_number , r.documents_uploaded,
     r.created_at as 'report_created_at' , d.file_id  , d.original_file_name , d.type as 'file_type' ,
      d.submitted_by as 'file_uploaded_by', dt.name as 'file_sub_type' , st.name as 'report_status' from report r inner join report_documents d 
     on r.report_number = d.report_id inner join document_type dt on d.sub_type = dt.id inner join status_type st on
-    st.id = r.status_id where r.project_number=? and r.is_saved=? and d.sub_type in (?) ${isReviewer?alterQuery:''} limit ? offset ?`
+    st.id = r.status_id where r.project_number=? and r.is_saved=? and d.sub_type in (?) and r.created_by=?`
 
     try{
         const result = await sequelize.query(query,
         {
-            replacements:[projectId,true,screenId,parseInt(limit),parseInt(offset)],
+            replacements:[projectId,true,screenId,userId],
             type:QueryTypes.SELECT,
             raw:true
         })
@@ -156,25 +149,17 @@ async function getAllReportsBasedOnDocumentType(projectId,screenId,req){
 }
 
 
-async function getReportsWithNoDocumentsUploaded(projectId,req){
-       
-    const {limit,offset} = getLimitAndOffset(req)
+async function getReportsWithNoDocumentsUploaded(projectId,userId){
 
     try{
 
-        let alterQuery = null
-        const isReviewer = req.user.is_reviewer
-        if(isReviewer){
-          alterQuery = `and reviewer_id='${req.user.userId}'`
-        }
-
         let query = `select report_number , tags , comments as 'report_comments' , receiving_customer , reviewer_id , project_number,
         documents_uploaded, created_at as 'report_created_at' from report  where project_number=? and is_saved=? 
-        and documents_uploaded=? ${isReviewer?alterQuery:''} limit ? offset ?`
+        and documents_uploaded=? and created_by=?`
 
         const result = await sequelize.query(query,
             {
-                replacements:[projectId,true,false,parseInt(limit),parseInt(offset)],
+                replacements:[projectId,true,false,userId],
                 type:QueryTypes.SELECT,
                 raw:true
             })
@@ -198,125 +183,6 @@ async function getDocumentBasedOnFileId(fileId){
 
 }
 
-function getLimitAndOffset(req){
-
-    let {limit,offset} = req.query
-
-    if(!limit || isNaN(limit)){
-        limit = 10
-    }
-
-    if(!offset || isNaN(offset)){
-        offset=0
-    }
-    
-    return {
-        limit:limit,
-        offset:offset
-    }
-}
-
-async function getDocumentBasedOnDocId(docId){
-
-    try{
-        const result = await document.findOne({
-            where:{
-                file_id:{[Op.eq]:docId}
-            },
-            raw:true,
-            attributes:['file_id','storage_file_name','type','report_id']
-        })
-
-        return new Response(200,"SUCCESS","Document Metadata.",result)
-    }catch(error){
-        console.error("Error in fetching doc " + error)
-        return new Response(500,"FAILURE","Unknown error occured.",null)  
-    }
-}
-
-
-async function updateDocument(docId,fileName,subType){
-
-    try{
-        let query = `update report_documents set sub_type=? , original_file_name=?, updated_at=? where file_id=?`
-
-        const result = await sequelize.query(query,{
-            replacements:[+subType,fileName,new Date(),docId],
-            raw:true,
-            type:QueryTypes.UPDATE
-        })
-
-        return new Response(200,"SUCCESS","Document Updated.",result)
-    }catch(error){
-        console.error("Error in updating doc " + error)
-        return new Response(500,"FAILURE","Unknown error occured.",null)  
-    }
-
-}
-
-
-async function deleteDocument(docId,reportId){
-    try{
-         
-        const result = await sequelize.transaction(async (t1)=>{
-            
-            const docResult = await document.destroy({
-                where:{
-                    file_id:{[Op.eq]:docId}
-                }
-            })
-    
-            let responseResult = null
-
-            if(reportId){
-               let query = `update report set documents_uploaded=? , updated_at=? where report_number=?`
-               reportResult = await sequelize.query(query,{
-                replacements:[false,new Date(),reportId],
-                raw:true,
-                type:QueryTypes.DELETE
-               })
-            }
-
-             return {
-                docResult:docResult,
-                responseResult:responseResult
-            }
-        
-        })
-        return new Response(200,"SUCCESS",`Deleted doc with id ${docId}.`,result)
-    }catch(error){
-        console.error("Error in deleting doc " + error)
-        return new Response(500,"FAILURE","Unknown error occured.",null) 
-    }
-}
-
-
-async function getDocumentsCountRelatedToReport(reportId){
-
-    try{
-       const {count,rows} = await report.findAndCountAll({
-        where:{
-            report_number:{[Op.eq]:reportId}
-        },
-        raw:true,
-        include:{
-            model:document,
-            as:'report_id_fk'
-        }
-       })
-
-       const response = {
-        count:count,
-        rows:rows
-       }
-            
-      return new Response(200,"SUCCESS",`Document count for the report ${reportId}.`,response) 
-    }catch(error){
-        console.error("Error in founding count of docs linked to report " + error)
-        return new Response(500,"FAILURE","Unknown error occured.",null) 
-    }
-} 
 
 module.exports = {saveReport,saveDocument,getReportsWithStatusCount,getProjectLinkedToReports,
-    getAllReportsBasedOnDocumentType,getReportsWithNoDocumentsUploaded,getDocumentBasedOnFileId,
-    getDocumentBasedOnDocId,updateDocument,deleteDocument,getDocumentsCountRelatedToReport}
+    getAllReportsBasedOnDocumentType,getReportsWithNoDocumentsUploaded,getDocumentBasedOnFileId}

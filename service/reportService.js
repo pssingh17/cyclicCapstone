@@ -13,32 +13,13 @@ const IllegalStateError = require('./errors/IllegalStateError')
 const { dirname } = require('path')
 const appDir = dirname(require.main.filename)
 const path = require('path')
-const reveiwerService = require('../service/reveiwerService')
-const FileType = require('../service/staticData/FileType')
 
-
-function validateRequest(req){
-  const {report_name,receiving_customer,reviewer_id,project_number} = req.body
-
-  return !(report_name&&receiving_customer&&reviewer_id&&project_number)
-
-}
 
 async function saveReport(req,res){
 
     const {hasReport=false, hasCertificate = false,report_type,certificate_type} = req.body
 
     try{
-       
-      if((hasReport && !FileType.isDocumentTypeValid(report_type)) || (hasCertificate && !FileType.isDocumentTypeValid(certificate_type))){
-        return res.status(400).json((new Response(400,"FALIURE",
-        "report_type or/and certificate_type is invalid.",null)).getErrorObject())
-      } 
-        
-      if(validateRequest(req)){
-        return res.status(400).json((new Response(400,"FALIURE",
-        "report_name,receiving_customer,reviewer_id,project_number are required fields. Some or all are missing",null)).getErrorObject())
-      }
 
       const result  = await sequelize.transaction(async (t1)=>{
             const userId = req.user.userId
@@ -136,7 +117,7 @@ async function saveReport(req,res){
              return res.status(400).json((new Response(error.statusCode,error.status,error.message,null)).getErrorObject())
         }
         
-        return res.json(( new Response(500,"FAILURE",`Unknown error occured.`,null)).getErrorObject())
+        return res.json(( new Response(500,"FAILURE",`Unknown error occured.`,"")).getErrorObject())
     }
 }
 
@@ -158,15 +139,8 @@ function verifyDocumentsStatus(isPresent,file,type){
 }
 
 
-function isEngineer(req){
-    return req.user.is_engineer
-}
-
-async function getReportsWithStatusCount(req,res){
-   if(!isEngineer(req)){
-    return reveiwerService.getReveiwerWorkStatus(req,res)
-   }
-   const response = await reportDao.getReportsWithStatusCount(req.user.userId)
+async function getReportsWithStatusCount(res){
+   const response = await reportDao.getReportsWithStatusCount()
    return createResponse(response,res)
 }
 
@@ -179,7 +153,7 @@ async function downloadDocumentRelatedToReport(fileId,res){
     }
     
     if(!response.getData()){
-        return res.status(400).json((new Response(400,"FAILURE","Invalid fileId. No data exist.",null)).getErrorObject())
+        return res.json((new Response(400,"FAILURE","Invalid fileId. No data exist.",null)).getErrorObject())
     }
 
     const report = response.data
@@ -192,107 +166,6 @@ async function downloadDocumentRelatedToReport(fileId,res){
           deleteFilesFromLocal(filePath)
     },10000)
     return res.download(filePath)
-}
-
-async function updateDocument(req,res){
-
-    try{
-        console.log(req.body)
-        const {doc_id,sub_type} = req.body
-
-        if(!req.file || !FileType.isDocumentTypeValid(sub_type) || !doc_id){
-            return res.status(400).json((new Response(400,"FAILURE","Either File is missing/mimetype not allowed/bigger than 25MB or document type is invalid or doc_id is missing.",null)).getErrorObject()) 
-        }
-    
-        const response = await reportDao.getDocumentBasedOnDocId(doc_id)
-        if(response.getStatusCode() === 500){
-              return res.status(500).json(response.getErrorObject())
-        }
-    
-        const document = response.data
-        if(!document){
-            return res.status(400).json((new Response(400,"FAILURE","Invalid doc_id. No data exists.",null)).getErrorObject())
-        }
-         
-        const containerName = (document.report_id).toLowerCase()
-        const blobName = document.storage_file_name
-        const originalFileName = req.file.originalname
-        console.dir({containerName,blobName,originalFileName,doc_id,sub_type})
-
-        const updatedResponse = await sequelize.transaction(async (t1) => {
-               const containerClient = await azureStorage.getExistingContainer(containerName)
-               await azureStorage.uploadBlob(req.file,containerName,blobName,containerClient)
-               const updateResponse = await reportDao.updateDocument(doc_id,originalFileName,sub_type)
-               if(updateResponse.getStatusCode() === 500){throw new IllegalStateError("Error in updating Document.")}
-               console.info(updateResponse)
-               return updateResponse
-        })
-
-        return res.json((new Response(200,"SUCCESS",`Updated document linked to id ${doc_id}.`,updatedResponse)).getSuccessObject())
-
-    }catch(error){
-
-        if(!req.file){
-            deleteFilesFromLocal(req.file.path)
-        }
-        console.error("Error in updating existing document " + error)
-        return res.json(( new Response(500,"FAILURE",`Unknown error occured.`,"")).getErrorObject())
-    }
-}
-
-async function deleteDocument(req,res){
-   
-    try{
-        const {report_id,doc_id} = req.body
-        if(!report_id || !doc_id){
-            return res.status(400).json((new Response(400,"FAILURE","report_id and/or doc_id missing in request body.",null)).getErrorObject())
-        }
-
-        const response = await reportDao.getDocumentsCountRelatedToReport(report_id)
-        if(response.getStatusCode() === 500){
-            return res.status(500).json(response.getErrorObject())
-        }
-
-        let count = null
-        const rows = response.data.rows
-        
-        if(!rows){
-            return res.status(400).json((new Response(400,"FAILURE","report_id is invalid, No Data Exist.",null)).getErrorObject())
-        }
-
-        if(rows.length === 1){
-            if(rows[0]['report_id_fk.file_id']){ count=1 }
-        }else{ count=2 }
-
-        console.info(rows)
-        console.info(`Documents linked with reportId ${report_id} are ${count}.`)
-        if(!count || isNaN(count)){
-            return res.status(400).json((new Response(400,"FAILURE","No document is linked to this report_id.",null)).getErrorObject())
-        }
-
-        const document = rows.filter((row) => row['report_id_fk.file_id']=== doc_id)
-        console.info(document)
-        if(!document){
-            return res.status(400).json((new Response(400,"FAILURE","Invalid doc_id. No data exists.",null)).getErrorObject())
-        }
-
-        const containerName = report_id.toLowerCase()
-        let deleteResponse=null
-        if(count === 1){
-            await azureStorage.deleteContainer(containerName)
-            deleteResponse =  await reportDao.deleteDocument(doc_id,report_id)
-        }else{
-            const blobName = document[0]['report_id_fk.storage_file_name']
-            await azureStorage.deleteBlob(blobName,containerName)
-            deleteResponse = await reportDao.deleteDocument(doc_id,null)
-        }
-      
-        return res.json((new Response(200,"SUCCESS",`Document deleted with doc_id ${doc_id} linked to report_id ${report_id}.`,deleteResponse)).getSuccessObject())
-    }catch(error){
-        console.error("Error in deleting existing document " + error)
-        return res.json(( new Response(500,"FAILURE",`Unknown error occured.`,"")).getErrorObject())
-    }
-
 }
 
 
@@ -313,8 +186,7 @@ function createResponse(response,res){
     return res.json(response.getSuccessObject())
 } 
 
-module.exports = {saveReport,getReportsWithStatusCount,deleteFilesFromLocal,downloadDocumentRelatedToReport,
-                 updateDocument,deleteDocument}
+module.exports = {saveReport,getReportsWithStatusCount,deleteFilesFromLocal,downloadDocumentRelatedToReport}
 
 
 
