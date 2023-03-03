@@ -13,8 +13,13 @@ projectRoute.all('*',(req,res,next)=>{
     res.status(401).json({status:"FAILURE",message:"Please LogIn.",isLoggedIn:false})
 })
 
+function isEngineer(req,res,next){
+    return req.user.is_engineer?
+           next():
+           res.json((new Response(200,"FAILURE","Person Signed in, is not an engineer.",null).getErrorObject()))
+}
 
-projectRoute.post('/save',[
+projectRoute.post('/save',isEngineer,[
     check("project_type","Field Required").notEmpty(),
     check("project_name","Field Required").notEmpty(),
     check("client_ready","Field Required").isDate(),
@@ -33,19 +38,19 @@ projectRoute.post('/save',[
 
 projectRoute.get('/',async (req,res)=> {
    const {name} = req.query
-   return await projectMethods.getProjectsByName(req.user.userId,name,res)
+   return await projectMethods.getProjectsByName(req.user.userId,name,res,req)
 })
 
 projectRoute.get('/search',async(req,res)=>{
     return await projectMethods.getManufactureOrProjectInfo(req,res)
 })
 
-projectRoute.get('/:id',async (req,res)=>{
-    return await projectMethods.getAllProjectInformation(req,res)
+projectRoute.get('/notifications',async (req,res)=>{
+    return await projectMethods.getNotifications(req,res)
 })
 
-projectRoute.get('/notification/engineer',async (req,res)=>{
-    return await projectMethods.getNotificationsForTheEngineer(req,res)
+projectRoute.get('/:id',async (req,res)=>{
+    return await projectMethods.getAllProjectInformation(req,res)
 })
 
 projectRoute.get('/status/types',async(req,res)=>{

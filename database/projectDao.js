@@ -89,20 +89,16 @@ async function getProjectByName(name,id,userId){
 
 }
 
-async function getAllProjectInfo(id,userId,screenId){
+async function getAllProjectInfo(id,screenId,req){
 
     try{
-        const result = await project.findByPk(id,{
-            where:{
-                [Op.eq]:{created_by:userId}
-            }
-        })
+        const result = await project.findByPk(id)
 
         let reports = null
         if(!screenId || isNaN(screenId)){
-            reports = await reportDao.getReportsWithNoDocumentsUploaded(id,userId)
+            reports = await reportDao.getReportsWithNoDocumentsUploaded(id,req)
         }else{
-            reports = await reportDao.getAllReportsBasedOnDocumentType(id,parseInt(screenId),userId)
+            reports = await reportDao.getAllReportsBasedOnDocumentType(id,parseInt(screenId),req)
         }
      
         const projectInfo = {
@@ -147,6 +143,24 @@ async function getEngineerLatestNotifications(userId,limit,offset){
     }
 
 
+}
+
+function getLimitAndOffset(req){
+
+    let {limit,offset} = req.query
+
+    if(!limit || isNaN(limit)){
+        limit = 10
+    }
+
+    if(!offset || isNaN(offset)){
+        offset=0
+    }
+    
+    return {
+        limit:limit,
+        offset:offset
+    }
 }
 
 

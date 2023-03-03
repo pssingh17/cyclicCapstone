@@ -3,6 +3,7 @@ const userDao = require('../database/userDao')
 const reportDao = require('../database/reportDao')
 const Response = require('./customResponse')
 const StatusType = require('../service/staticData/StatusType')
+const reveiwerService = require('../service/reveiwerService')
 
 
 async function saveProject(userId,body,res){
@@ -10,7 +11,16 @@ async function saveProject(userId,body,res){
      return createResponse(response,res)
 }
 
-async function getProjectsByName(userId,name,res){     
+function isEngineer(req){
+    return req.user.is_engineer
+}
+
+async function getProjectsByName(userId,name,res,req){ 
+    
+    if(!isEngineer(req)){
+        return reveiwerService.getReveiwerProjectsByName(req,res)
+    }
+    
     if(!name){
         return res.status(400).json((new Response(400,"SUCCESS","name field missing in req query params.",null).getErrorObject()))
     }
@@ -19,6 +29,10 @@ async function getProjectsByName(userId,name,res){
 }
 
 async function getManufactureOrProjectInfo(req,res){
+
+    if(!isEngineer(req)){
+        return reveiwerService.searchForReveiwer(req,res)
+    }
 
     const {projectId,reportId,name,id} = req.query
 
@@ -55,12 +69,15 @@ async function getAllProjectInformation(req,res){
     const {screenId} = req.query
     console.log("Fetching data for the projectId : " + id)
      
-    const response = await projectDao.getAllProjectInfo(id,req.user.userId,screenId)
+    const response = await projectDao.getAllProjectInfo(id,screenId,req)
     return createResponse(response,res)
 }
 
 
-async function getNotificationsForTheEngineer(req,res){
+async function getNotifications(req,res){
+    if(!isEngineer(req)){
+        return reveiwerService.getReviwerNotifications(req,res)
+    }
     const {limit,offset} = req.query
     const result = await projectDao.getEngineerLatestNotifications(req.user.userId,limit,offset)
     return createResponse(result,res)
@@ -76,4 +93,4 @@ function createResponse(response,res){
 } 
 
 module.exports = {saveProject,getProjectsByName,getManufactureOrProjectInfo,getAllProjectInformation,
-                 getNotificationsForTheEngineer}
+    getNotifications}
