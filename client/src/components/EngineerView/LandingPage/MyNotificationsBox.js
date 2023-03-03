@@ -23,7 +23,7 @@ export const MyNotificationsBox = () => {
      headers:myHeaders
     }).then(res=>{
     //  dispatch(LoaderStatus(false))
-    //  console.log("response form MyNotifications Box", res.data)
+     console.log("response form MyNotifications Box", res.data)
     if(res?.data?.data?.length>0){
        setNotificationData(res?.data?.data)
     }

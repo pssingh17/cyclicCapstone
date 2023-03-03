@@ -55,7 +55,7 @@ export const Login = () => {
         // let cookieCheck = cookie?.accessToken
         // console.log(res.headers)
         // console.log(res.config)
-      // console.log("res check:",res)
+      console.log("res check:",res)
       if(res?.data?.data?.isLoggedIn){
 
         dispatch(LoginDetails(res.data?.data))
