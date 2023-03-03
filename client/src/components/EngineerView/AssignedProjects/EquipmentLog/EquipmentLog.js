@@ -105,7 +105,7 @@ export const EquipmentLog = () => {
                        style={{cursor:"pointer"}} 
                        onClick={()=>{
                         window.open(
-                          `http://localhost:8081/report/download/${data?.file_id}`
+                          `/report/download/${data?.file_id}`
                         )
                     }}
                        >
