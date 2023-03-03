@@ -12,6 +12,12 @@ class FileType{
         }
         return this.file_types;
     }
+
+    static async isDocumentTypeValid(id){
+        if(!id){return false}
+        const results = await this.getFileTypes()
+        return results.find((doc)=>doc.id===id)
+    }
 }
 
 module.exports = FileType

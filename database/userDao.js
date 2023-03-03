@@ -175,6 +175,25 @@ async function getManufactureNameOrId(name,id){
  
  }
 
+ 
+function getLimitAndOffset(req){
+
+    let {limit,offset} = req.query
+
+    if(!limit || isNaN(limit)){
+        limit = 10
+    }
+
+    if(!offset || isNaN(offset)){
+        offset=0
+    }
+    
+    return {
+        limit:limit,
+        offset:offset
+    }
+}
+
 
 module.exports = {saveUser,getUserById,saveManufacturer,getProjectByManufactureNameOrId,
                  getManufactureNameOrId,getUserByNameOrId}

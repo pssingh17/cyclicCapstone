@@ -7,6 +7,7 @@ const { BlobServiceClient, StorageSharedKeyCredential,ContainerClient
 const accountName = "capstoned";
 const accountKey = "DRuhoJNVyxh58M+XRCACtAeHmdXqeboWLZs07NGbPxd7LJR50bfSUHYFU7xdmHd16+Ie1JHr8c7/+ASt/8jUNg==";
 
+
 // Use StorageSharedKeyCredential with storage account and account key
 // StorageSharedKeyCredential is only available in Node.js runtime, not in browsers
 const sharedKeyCredential = new StorageSharedKeyCredential(accountName, accountKey);
@@ -21,6 +22,7 @@ async function getExistingContainer(containerName){
 
   }catch(error){
     console.log("Error in connecting to existing container with name " + containerName + " and error is " + error)
+    throw error
   }  
 }
 
@@ -40,7 +42,7 @@ async function createContainer(containerName){
        console.log(`Created container ${containerName} successfully`, createContainerResponse.requestId);
        return containerClient;
    }catch(error){
-    throw new Error(error)
+    throw error
    }
 }
 
@@ -56,12 +58,12 @@ async function getAllBlobs(containerName){
 
     }catch(error){
       console.log("Azure Storage || Error in traversing " + containerName + " and error is  " + error )
+      throw error
     }
 }
 
 async function uploadBlob(file,containerName,blobName,containerClient){
    console.log("Uploading file with container Name " + containerName + " and blob name " + blobName) 
-   const fileReadStream =  fs.createReadStream(file.path)
 
     try{
       const blobOptions = {
@@ -78,7 +80,6 @@ async function uploadBlob(file,containerName,blobName,containerClient){
         console.log("Azure Storage || File Creation error " + error)
         throw error
    }finally{
-          fileReadStream.destroy()
           fs.unlink(file.path,(err)=>{
             console.log("Deleting uploaded file from local storage.")
             if(err){
@@ -96,6 +97,7 @@ async function downloadBlob(containerName,blobName,fileName){
      await blobClient.downloadToFile(fileName)    
    }catch(error){
         console.log("Azure Storage || Download error " + error)
+        throw error
    }
 }
 
@@ -106,10 +108,21 @@ async function deleteContainer(containerName){
         console.log("Delete container" + JSON.stringify(response))
     }catch(error){
         console.log("Azure Storage || Error in deleting blob container ==> " + error)
+        throw error
     }
+}
 
+async function deleteBlob(blobName,containerName){
 
+  try{
+      const containerClient = await getExistingContainer(containerName)
+      const deleteBlob = await containerClient.deleteBlob(blobName,{deleteSnapshots:"include"})
+      console.info(deleteBlob)
+  }catch(error){
+    console.error("Error in deleting blob " + error)
+    throw error
+  }
 }
 
 
-module.exports = {getAllBlobs,uploadBlob,downloadBlob,deleteContainer,createContainer,getExistingContainer}
+module.exports = {getAllBlobs,uploadBlob,downloadBlob,deleteContainer,createContainer,getExistingContainer,deleteBlob}
