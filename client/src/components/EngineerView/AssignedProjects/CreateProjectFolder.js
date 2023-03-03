@@ -26,7 +26,7 @@ const CreateProjectFolder = () => {
     axios({
       method: 'post',
       maxBodyLength: Infinity,
-        url: '/project/save',
+        url: 'http://localhost:8081/project/save',
         headers:myHeaders,
         data : data,
         credentials: "include", 
@@ -102,12 +102,11 @@ const CreateProjectFolder = () => {
           <div className="lefttb2"> 
           <section>*Project Type</section>
           <div className='moveright'>
-          <section > *Project Number</section></div></div>
+          </div></div>
           
           <div className="w3">
           <input className='createProjectFolderBoxBorder'  type="Text" placeholder="Enter Project Type" {...register("project_type")}></input>
-          <div className='w4'>
-          <input className='createProjectFolderBoxBorder' type="Text"  placeholder="Enter Project Number"  {...register("project_number",{ minLength:2, maxLength: 20 })}></input></div></div>
+         </div>
           
         
          
@@ -126,7 +125,7 @@ const CreateProjectFolder = () => {
               axios({
                 method: 'get',
                 maxBodyLength: Infinity,
-                  url: '/user/merchant',
+                  url: 'http://localhost:8081/user/merchant',
                   params : data,
                 
                   credentials: "include", 
@@ -186,7 +185,7 @@ const CreateProjectFolder = () => {
               axios({
                 method: 'get',
                 maxBodyLength: Infinity,
-                  url: '/user/search',
+                  url: 'http://localhost:8081/user/search',
                   params : data,
                 
                   credentials: "include", 

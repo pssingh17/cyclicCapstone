@@ -1,8 +1,16 @@
+import axios from "axios";
 import React from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
+import Button from 'react-bootstrap/Button';
+import Modal from 'react-bootstrap/Modal';
+import { useState } from "react";
 
 export const AssignedProjectsBox = () => {
+  const [show, setShow] = useState(false);
+  const [searchResult, setSearchResult] = useState()
+  const handleClose = () => setShow(false);
+  const handleShow = () => setShow(true);
   let navigate = useNavigate()
   const {
     register,
@@ -11,9 +19,72 @@ export const AssignedProjectsBox = () => {
     formState: { errors },
   } = useForm();
   const onSubmit = (data) => {
-    console.log(data);
+    var myHeaders = new Headers();
+    myHeaders.append("Content-Type", "application/json");
+    myHeaders.append('Access-Control-Allow-Origin', 'http://localhost:8081')
+    myHeaders.append('Access-Control-Allow-Credentials', true)
+    axios({
+     method:'get',
+     maxBodyLength: Infinity,
+     url: `http://localhost:8081/project`,
+     credentials: "include", 
+     withCredentials:true,
+     params:{
+      name:data?.name
+     },
+     headers:myHeaders
+    }).then(res=>{
+      // console.log("res in project name", res)
+      setShow(true)
+      setSearchResult(res.data?.data)
+    if(res?.data?.data?.length>0){
+      //  setNotificationData(res?.data?.data)
+    }
+   })
+    .catch(err=>{
+     console.log("error assigned project box  ",err)
+    })
   };
+  const showProject=(project_name)=>{
+    localStorage.setItem("ProjectName",JSON.stringify(project_name))
+    navigate('/engineerView/assignedProjects')
+   }
   return (
+    <>
+    {show?<>
+      <div
+      className="modal show "
+      style={{ display: 'block', position: 'absolute' }}
+    >
+      <Modal show={show} onHide={handleClose} backdrop="static">
+        <Modal.Header>
+          <Modal.Title>Search Results</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          {searchResult?.length>0? searchResult.map((data, index)=>{
+            return(
+            <div key={index}>
+            <div className="d-flex resultCs" onClick={()=>{
+              showProject(data?.project_name)
+            }}>
+            <p className="mr-3"><b>Project Name</b> : {data?.project_name}</p>
+            <p><b>Project Number</b> : {data?.project_number}</p>
+            </div>
+            
+            </div>
+            )
+          }):"No results"}
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={handleClose}>
+            Close
+          </Button>
+        
+        </Modal.Footer>
+      </Modal>
+      </div>
+    </>:""}
+    
     <div className="py-3 px-2 ">
       <div className="myContainer">
         <div className="customHeader py-3 px-5">
@@ -27,17 +98,17 @@ export const AssignedProjectsBox = () => {
         <div className="customBody">
           <div className="customItemsAssignedProj">
             <div>
-              <form type="submit" onSubmit={handleSubmit(onSubmit)}>
+              <form type="submit">
                 <div className="filterAssignedProjectsContainer pt-4">
                   <div className="mb-3 d-flex w-auto">
                     <input
                       type="text"
                       className="form-control customAssProjSearchHeight"
-                      placeholder="Customer Name"
+                      placeholder="Project Name"
                       aria-describedby="emailHelp"
-                      {...register("CustomerName")}
+                      {...register("name")}
                     />
-                    <div className="customSvg ml-1 mt-1">
+                    <div className="customSvg ml-1 mt-1" onClick={handleSubmit(onSubmit)}>
                       <svg
                         width="31"
                         height="31"
@@ -69,5 +140,5 @@ export const AssignedProjectsBox = () => {
         </div>
       </div>
     </div>
-  );
+  </>);
 };

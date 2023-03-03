@@ -14,7 +14,7 @@ export const ReviewNotificationsBox = () => {
         </div>
         <div className="customBody">
           <div className="customTable px-4">
-          <table className="table">
+          {/* <table className="table">
             <thead style={{backgroundColor:"#ABC7DE"}}>
               <tr>
                 <th scope="col">Report</th>
@@ -43,7 +43,7 @@ export const ReviewNotificationsBox = () => {
                 <td>Project 3</td>
               </tr>
             </tbody>
-          </table>
+          </table> */}
           </div>
         </div>
       </div>

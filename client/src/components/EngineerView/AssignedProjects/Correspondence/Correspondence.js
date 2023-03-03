@@ -46,7 +46,7 @@ export const Correspondence = () => {
     axios({
       method: "get",
       maxBodyLength: Infinity,
-      url: "/project/2897561PF2",
+      url: "http://localhost:8081/project/2897561PF2",
       headers: myHeaders,
       credentials: "include",
       withCredentials: true,
@@ -123,35 +123,11 @@ export const Correspondence = () => {
                         xmlns="http://www.w3.org/2000/svg"
                       style={{cursor:"pointer"}}
                       onClick={()=>{
-                        var myHeaders = new Headers();
-                        myHeaders.append("Content-Type", "application/json");
-                        myHeaders.append('Access-Control-Allow-Origin', 'http://localhost:8081')
-                        myHeaders.append('Access-Control-Allow-Credentials', true)
-                       
-                          axios({
-                            method: 'get',
-                            maxBodyLength: Infinity,
-                            url: `/report/download/${data?.file_id}`,
-                            headers:myHeaders,
-                            credentials: "include", 
-                            withCredentials:true,
-              
-                            
-                          })
-                          .then(function (response) {
-                           console.log(response)
-                            
-                          })
-                          .catch(function (error) {
-                            console.log("Error block financials", error);
-                            if(error?.response?.status===401){
-                              dispatch(LoginDetails({}));
-                                  cookies.remove('connect.sid');
-                                  localStorage.setItem("AlertMessage", JSON.stringify("Session Expired...Please Login Again"))
-                                navigate('/')
-                            }
-                           
-                          });
+                        
+                        window.open(
+                          `http://localhost:8081/report/download/${data?.file_id}`
+                        )
+                         
                     }}
                       >
                         <path

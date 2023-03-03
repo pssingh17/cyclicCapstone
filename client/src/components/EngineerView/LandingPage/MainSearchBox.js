@@ -44,7 +44,7 @@ export const MainSearchBox = () => {
     axios({
       method: 'get',
       maxBodyLength: Infinity,
-        url: '/project/search',
+        url: 'http://localhost:8081/project/search',
         params : data,
         headers:myHeaders,
         credentials: "include", 
@@ -55,7 +55,9 @@ export const MainSearchBox = () => {
       setShow(true)
       setSearchResult(response.data?.data)
       if(response.data?.isLoggedIn == false){
-        alert(response.data?.message)
+        cookies.remove('connect.sid')
+      dispatch(LoginDetails({}))
+      localStorage.setItem("AlertMessage", JSON.stringify("Session Expired...Please Login Again"))
         navigate('/')
       }
     })

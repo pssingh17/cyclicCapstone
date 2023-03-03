@@ -28,7 +28,7 @@ export const Navbar = () => {
       method: "post",
       maxBodyLength: Infinity,
 
-      url: `/user/logout`,
+      url: `http://localhost:8081/user/logout`,
       credentials: "include", 
       withCredentials:true,
 

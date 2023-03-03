@@ -12,16 +12,78 @@ import { useCookies } from "react-cookie";
 import { userLoginCheck } from "../../../helpers/userLoginCheck";
 import { LoginDetails } from "../../Login/LoginReducer/LoginSlice";
 import { LoaderStatus } from "../../Common/LoaderReducer/LoaderSlice";
+import { useForm } from "react-hook-form";
+import Button from 'react-bootstrap/Button';
+import Modal from 'react-bootstrap/Modal';
+
 
 import Cookies from "universal-cookie";
 
 export const LandingPage = () => {
   const ULogged = useSelector((state)=>state.Login.value)
+  const [show, setShow] = useState(false);
+
+  const handleClose = () => setShow(false);
+  const handleShow = () => setShow(true);
+  const [searchResult, setSearchResult] = useState()
+  const showProject=(project_name)=>{
+    localStorage.setItem("ProjectName",JSON.stringify(project_name))
+    navigate('/engineerView/assignedProjects')
+   }
+  const {
+    register,
+    handleSubmit,
+    watch,
+    formState: { errors },
+  } = useForm();
   const navigate = useNavigate()
   const cookies = new Cookies()
  
+  const onSubmit = (data) => {
+    // console.log(data);
+    var myHeaders = new Headers();
+    myHeaders.append("Content-Type", "application/json");
+    myHeaders.append('Access-Control-Allow-Origin', 'http://localhost:8081')
+    myHeaders.append('Access-Control-Allow-Credentials', true)
+    
+   
+    
+    axios({
+      method: 'get',
+      maxBodyLength: Infinity,
+        url: 'http://localhost:8081/project/search',
+        params : data,
+        headers:myHeaders,
+        credentials: "include", 
+        withCredentials:true,
+    })
+    .then(function (response) {
+      console.log(response.data);
+      setShow(true)
+      setSearchResult(response.data?.data)
+      if(response.data?.isLoggedIn == false){
+        cookies.remove('connect.sid')
+      dispatch(LoginDetails({}))
+      localStorage.setItem("AlertMessage", JSON.stringify("Session Expired...Please Login Again"))
+        navigate('/')
+      }
+    })
+    .catch(function (error) {
+      console.log("Error block", error);
+      if(error?.response?.status===401){
+        dispatch(LoginDetails({}));
+            cookies.remove('connect.sid');
+            localStorage.setItem("AlertMessage", JSON.stringify("Session Expired...Please Login Again"))
+          navigate('/')
+      }
+     
+    });
+  };
+
  
   let dispatch = useDispatch()
+
+
   useEffect(()=>{
     dispatch(LoaderStatus(true))
    userLoginCheck().then(res=>{
@@ -53,6 +115,39 @@ export const LandingPage = () => {
     {ULogged?.is_engineer===true ?
    
     <>
+     {show?<>
+      <div
+      className="modal show "
+      style={{ display: 'block', position: 'absolute' }}
+    >
+      <Modal show={show} onHide={handleClose} backdrop="static">
+        <Modal.Header>
+          <Modal.Title>Search Results</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          {searchResult?.length>0? searchResult.map((data, index)=>{
+            return(
+            <div key={index}>
+            <div className="d-flex resultCs" onClick={()=>{
+              showProject(data?.project_name)
+            }}>
+            <p className="mr-3"><b>Project Name</b> : {data?.project_name}</p>
+            <p><b>Project Number</b> : {data?.project_number}</p>
+            </div>
+            
+            </div>
+            )
+          }):"No results"}
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={handleClose}>
+            Close
+          </Button>
+        
+        </Modal.Footer>
+      </Modal>
+      </div>
+    </>:""}
     <div className="homeBar">
        
        <NavLink className="leftHBar" to="/engineerView/landingPage">
@@ -74,13 +169,14 @@ export const LandingPage = () => {
 
      <div className="rightHBar">
        <div className="searchBox">
-         <input type="text" placeholder="Report Number" />
+         <input type="text" placeholder="Report Number" {...register("reportId")} />
          <svg
            width="31"
            height="31"
            viewBox="0 0 31 31"
            fill="none"
            xmlns="http://www.w3.org/2000/svg"
+           onClick={handleSubmit(onSubmit)}
          >
            <path
              d="M0 0H27.2062C28.9736 0 30.4062 1.43269 30.4062 3.2V27.3469C30.4062 29.1142 28.9736 30.5469 27.2062 30.5469H0V0Z"

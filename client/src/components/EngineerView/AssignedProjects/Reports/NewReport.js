@@ -19,6 +19,7 @@ export const NewReport=()=>{
   const { register, handleSubmit, control , formState: { errors }} = useForm();
   const[searchResults, setSearchResults] = useState([])
   const[searchResults1, setSearchResults1] = useState([])
+  const[searchResults2, setSearchResults2] = useState([])
   const navigate = useNavigate()
   const dispatch = useDispatch()
   const [showGreen, setShowGreen] = useState(false);
@@ -66,7 +67,7 @@ export const NewReport=()=>{
 
       method: 'post',
       maxBodyLength: Infinity,
-      url: '/report',
+      url: 'http://localhost:8081/report',
       
       headers:myHeaders,
         data : formData,
@@ -157,7 +158,7 @@ return(
     axios({
       method: 'get',
       maxBodyLength: Infinity,
-        url: '/user/search',
+        url: 'http://localhost:8081/user/search',
         params : data,
       
         credentials: "include", 
@@ -219,7 +220,7 @@ return(
     axios({
       method: 'get',
       maxBodyLength: Infinity,
-        url: '/user/search',
+        url: 'http://localhost:8081/user/search',
         params : data,
       
         credentials: "include", 
@@ -269,7 +270,57 @@ return(
 <form className='custom_form'>
 <div className="mb-3 customColor">
   <label htmlFor="availableReviewers" className="form-label">*Project Number</label>
-  <input type="availableReviewers" className="form-control custom_txtbox" id="availableReviewers" {...register("project_number",{ required: true})}/>
+  <div className='parentSearchResult'>
+  <input type="availableReviewers" className="form-control custom_txtbox" id="projectNumber" {...register("project_number",{ required: true})}
+   onChange={debounce(async (e) => {
+    let str = e.target.value
+    console.log("str check", str)
+    let data={
+      name: str
+    }
+    axios({
+      method: 'get',
+      maxBodyLength: Infinity,
+      url: 'http://localhost:8081/project',
+        params : data,
+      
+        credentials: "include", 
+        withCredentials:true,
+    })
+    .then(function (response) {
+      console.log(response.data);
+      if(response.data?.data.length>0){
+
+        setSearchResults2(response.data?.data)
+      }
+      else{
+        setSearchResults2([])
+      }
+     
+    })
+    .catch(function (error) {
+      console.log("Error block", error);
+     
+    });
+  }, 800)}
+  />
+   <div className='searchResultsContainer'>
+            {searchResults2?.length>0? 
+              <div className='searchResults'>
+            {searchResults2?.length>0? searchResults2.map((result,index)=>{
+             
+                
+                return <div key={index} className='searchItem' onClick={()=>{
+                  document.getElementById("projectNumber").value = result.project_number;
+                  document.getElementById("projectNumber").focus();
+                  setSearchResults2([])
+                }}>{result?.project_number}- {result?.project_name}</div>
+                
+              
+            }):""
+          }</div>:""}
+          </div>
+</div>
 </div>
 <div className="mb-3 customColor">
   <label htmlFor="productsCovered" className="form-label"> *Products Covered</label> 

@@ -40,7 +40,7 @@ export const Deliverables = () => {
       axios({
         method: 'get',
         maxBodyLength: Infinity,
-        url: '/project/2897561PF2',
+        url: 'http://localhost:8081/project/2897561PF2',
         headers:myHeaders,
         credentials: "include", 
         withCredentials:true,
