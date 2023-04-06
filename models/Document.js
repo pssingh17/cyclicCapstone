@@ -26,7 +26,12 @@ const document = sequelize.define('report_documents',{
     },
     type:{
         type:DataTypes.STRING
-    }  
+    },
+    isDeleted:{
+        type:DataTypes.BOOLEAN,
+        allowNull:false,
+        defaultValue:false
+    } 
 },{
     tableName:'report_documents',
     timestamps:false

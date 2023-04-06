@@ -9,6 +9,7 @@ const {dirname}  = require('path')
 const path  = require('path')
 const appDir = dirname(require.main.filename)
 const alphanumeric = require('alphanumeric-id')
+const os = require('os')
 
 const app = express()
 
@@ -16,9 +17,9 @@ const validMimeTypes = ["application/vnd.openxmlformats-officedocument.wordproce
 "application/msword","application/vnd.ms-excel","application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"]
 
 const storage = multer.diskStorage({
-  destination: function(req,file,cb){
-    cb(null,path.join(appDir,'/static'))
-  },
+  // destination: function(req,file,cb){
+  //   cb(null,os.tmpdir())
+  // },
   filename:function(req,file,cb){
     console.log(file.mimetype)
     cb(null,alphanumeric(9)+file.originalname)
@@ -36,7 +37,8 @@ const upload = multer({
       }
       
       cb(null,true)
-  }
+  },
+  preservePath:""
 }) 
 
 

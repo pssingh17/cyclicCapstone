@@ -16,7 +16,7 @@ projectRoute.all('*',(req,res,next)=>{
 function isEngineer(req,res,next){
     return req.user.is_engineer?
            next():
-           res.json((new Response(200,"FAILURE","Person Signed in, is not an engineer.",null).getErrorObject()))
+           res.json((new Response(401,"FAILURE","Person Signed in, is not an engineer.",null).getErrorObject()))
 }
 
 projectRoute.post('/save',isEngineer,[
@@ -48,6 +48,10 @@ projectRoute.get('/search',async(req,res)=>{
 projectRoute.get('/notifications',async (req,res)=>{
     return await projectMethods.getNotifications(req,res)
 })
+
+projectRoute.get('/all',async (req,res)=>{
+    return projectMethods.getAllProjectsForAnEngineer(req,res) 
+ })
 
 projectRoute.get('/:id',async (req,res)=>{
     return await projectMethods.getAllProjectInformation(req,res)

@@ -1,13 +1,14 @@
 import axios from 'axios'
 import React from 'react'
 import { useDispatch } from 'react-redux';
+import BACKEND_URL from '../backendUrl';
 
 export const userLoginCheck = async () => {
 
     var config = {
         method: 'get',
       maxBodyLength: Infinity,
-        url: '/user',
+        url: `${BACKEND_URL}/user`,
         credentials: "include", 
         withCredentials:true,
       };

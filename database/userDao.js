@@ -66,7 +66,7 @@ async function saveManufacturer(body){
 }
 
 
-async function getProjectByManufactureNameOrId(name,id){
+async function getProjectByManufactureNameOrId(name,id,userId){
      
    try{
     if(name){
@@ -87,7 +87,10 @@ async function getProjectByManufactureNameOrId(name,id){
         include:{
                model:project,
                as:'projects_fk',
-               attributes:['project_number','project_name']
+               attributes:['project_number','project_name'],
+               where:{
+                created_by:{[Op.eq]:userId}
+               }
         }
     },{raw:true})
 

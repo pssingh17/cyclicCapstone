@@ -7,6 +7,7 @@ import { LoginDetails } from "../../Login/LoginReducer/LoginSlice";
 import "./Navbar.css";
 import { userLoginCheck } from "../../../helpers/userLoginCheck";
 import Cookies from "universal-cookie";
+import BACKEND_URL from '../../../backendUrl'
 export const Navbar = () => {
   // const [login, setLogin] = useState(false)
   let dispatch = useDispatch();
@@ -18,7 +19,7 @@ export const Navbar = () => {
   const cookies = new Cookies()
 
   const Logout = () => {
-    console.log("Logout clicked");
+    // console.log("Logout clicked");
      // console.log(data)
      var myHeaders = new Headers();
      myHeaders.append("Content-Type", "application/json");
@@ -28,7 +29,7 @@ export const Navbar = () => {
       method: "post",
       maxBodyLength: Infinity,
 
-      url: `/user/logout`,
+      url: `${BACKEND_URL}/user/logout`,
       credentials: "include", 
       withCredentials:true,
 
@@ -67,7 +68,9 @@ export const Navbar = () => {
     }
   }).catch(err=>{
     console.log("error in navbar",err.response)
-    
+    cookies.remove('connect.sid')
+    dispatch(LoginDetails({}))
+    navigate('/')
   })
   },[])
 //  useEffect(()=>{console.log("Ulogged check", ULogged)},[ULogged])
@@ -146,7 +149,7 @@ export const Navbar = () => {
                     style={{width:"auto",border:"0"}}
                   >
                     <li>
-                      <Link className="dropdown-item" to="engineerView/createProjectFolder">
+                      <Link className="dropdown-item" to="view/createProjectFolder">
                         Create a Project Folder
                       </Link>
                     </li>
@@ -256,14 +259,10 @@ export const Navbar = () => {
                         </li>
                         <li>
                           <a className="dropdown-item" href="#">
-                            Another action
+                            Some other action
                           </a>
                         </li>
-                        <li>
-                          <a className="dropdown-item" href="#">
-                            Something else here
-                          </a>
-                        </li>
+                    
                       </ul>
                     </div>
                   </>
@@ -319,9 +318,14 @@ export const Navbar = () => {
                         aria-labelledby="dropdownMenuButton1"
                       >
                         <li>
-                          <a className="dropdown-item" href="#">
+                        <button
+                            className="dropdown-item"
+                            onClick={() => {
+                              Logout();
+                            }}
+                          >
                             Logout
-                          </a>
+                          </button>
                         </li>
                         <li>
                           <a className="dropdown-item" href="#">

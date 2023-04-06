@@ -7,8 +7,22 @@ const reveiwerService = require('../service/reveiwerService')
 
 
 async function saveProject(userId,body,res){
-    const response = await projectDao.saveProject(userId,body)
+    if(!validateDates(body)){
+       return res.
+       json((new Response(400,"FAILURE","Dates are invalid. Start date must be smaller than end date / completion date.",null))
+       .getErrorObject())
+    }
+     const response = await projectDao.saveProject(userId,body)
      return createResponse(response,res)
+}
+
+function validateDates(body){
+     const {completion,start_date,end_date} = body
+     const startDate = new Date(start_date)
+     const endDate = new Date(end_date)
+     const completionDate = new Date(completion)
+    
+    return startDate.getTime() < endDate.getTime() && startDate.getTime() < completionDate.getTime() ? true : false
 }
 
 function isEngineer(req){
@@ -43,23 +57,87 @@ async function getManufactureOrProjectInfo(req,res){
     }
 
     let response;
+    let projectResult = null
+    let reportResult= null
+    let nameAndIdResult= null
 
     console.log("Get Request getManufactureOrProjectInfo ==> " + JSON.stringify(req.query))
 
     if(projectId){
         response = await projectDao.getProjectByName(null,projectId,req.user.userId)
-        return createResponse(response,res)
+        projectResult = response.getStatusCode() === 200 ? response.getData() : [];
     }
 
     if(reportId){
         response = await reportDao.getProjectLinkedToReports(reportId,req.user.userId)
-        return createResponse(response,res)
+        reportResult = response.getStatusCode() === 200 ? response.getData() : [];
     }
 
     if(name || id){
-        response = await userDao.getProjectByManufactureNameOrId(name,id)
-        return createResponse(response,res)
+        response = await userDao.getProjectByManufactureNameOrId(name,id,req.user.userId)
+        nameAndIdResult = response.getStatusCode() === 200 ? response.getData() : [];
     }
+
+    console.log("Project")
+    console.info(projectResult)
+    console.log("Report")
+    console.info(reportResult)
+    console.log("Manufacturer")
+    console.info(nameAndIdResult)
+  
+   let finalResult = mergeResults(projectResult,reportResult,nameAndIdResult)
+
+   return res.json((new Response(200,"SUCCESS","Search Result",finalResult)).getSuccessObject())
+}
+
+function mergeResults(projectResult,reportResult,nameAndIdResult){
+       
+    if(projectResult && !reportResult && !nameAndIdResult){
+        return projectResult
+    }
+
+    if(!projectResult && reportResult && !nameAndIdResult){
+        return reportResult
+    }
+
+    if(!projectResult && !reportResult && nameAndIdResult){
+        return nameAndIdResult
+    }
+
+    if(projectResult && reportResult && !nameAndIdResult){
+         return merge(projectResult,reportResult) 
+    }
+
+    if(projectResult && !reportResult && nameAndIdResult){
+         return merge(projectResult,nameAndIdResult)
+    }
+
+    if(!projectResult && reportResult && nameAndIdResult){
+        return merge(reportResult,nameAndIdResult)
+    }
+    
+    if(projectResult && reportResult && nameAndIdResult){
+        let arr3 = merge(projectResult,reportResult)
+        return merge(arr3,nameAndIdResult)
+    }
+
+}
+
+function merge(arr1,arr2){
+    
+    if(arr1.length===0 || arr2.length===0){
+       return []
+    }
+    let result = []
+    arr1.map((item) => {
+        let ele = arr2.find((item2) => item2.project_number === item.project_number)
+        if(ele && ele.hasOwnProperty('project_number')){
+             result.push(ele)
+        }
+})
+    
+    console.log("Merging result is : " + JSON.stringify(result))
+    return result
 }
 
 
@@ -83,6 +161,14 @@ async function getNotifications(req,res){
     return createResponse(result,res)
 }
 
+async function getAllProjectsForAnEngineer(req,res){
+    if(!isEngineer(req)){
+        return reveiwerService.getAllProjectsOfReviwer(req,res)
+    }
+    const response = await projectDao.getAllProjects(req.user.userId)
+    return createResponse(response,res)
+}
+
 
 function createResponse(response,res){
     if(response.getStatusCode() !== 200){
@@ -93,4 +179,4 @@ function createResponse(response,res){
 } 
 
 module.exports = {saveProject,getProjectsByName,getManufactureOrProjectInfo,getAllProjectInformation,
-    getNotifications}
+                 getNotifications,getAllProjectsForAnEngineer,mergeResults,merge}

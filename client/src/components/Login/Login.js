@@ -11,6 +11,7 @@ import Alert from 'react-bootstrap/Alert';
 import Button from 'react-bootstrap/Button';
 import Cookies from "universal-cookie";
 import { LoaderStatus } from "../Common/LoaderReducer/LoaderSlice";
+import BACKEND_URL from "../../backendUrl";
 
 
 // import {REACT_APP_URL_BACKEND} from process.env;
@@ -20,7 +21,7 @@ export const Login = () => {
   let navigate = useNavigate()
   const cookies = new Cookies()
   
-  const { register, handleSubmit, watch, formState: { errors } } = useForm();
+  const { register, handleSubmit, watch, formState: { errors }, reset } = useForm();
   const [showGreen, setShowGreen] = useState(false);
   const [showRed, setShowRed] = useState(false)
   const [alertValue, setAlertValue] = useState()
@@ -44,7 +45,7 @@ export const Login = () => {
   
         method: 'post',
         
-        url: `/user/login`,
+        url: `${BACKEND_URL}/user/login`,
         
         data:data, 
         credentials: "include", 
@@ -55,17 +56,25 @@ export const Login = () => {
         // let cookieCheck = cookie?.accessToken
         // console.log(res.headers)
         // console.log(res.config)
-      console.log("res check:",res)
+        localStorage.clear()
+      // console.log("res check:",res)
       if(res?.data?.data?.isLoggedIn){
 
         dispatch(LoginDetails(res.data?.data))
-        navigate('/engineerView/landingPage')
+        navigate('/view/landingPage')
         // console.log("login respose :", res.data)
       
       }
       
       }
-        ).catch(err=>{console.log(err)})
+        ).catch(err=>{console.log(err)
+        if(err?.response?.status == 401){
+          setAlertValue("Invalid UserId or Password")
+          setShowRed(true)
+          reset()
+      
+        }
+        })
       
 };
 
@@ -73,8 +82,8 @@ export const Login = () => {
   dispatch(LoaderStatus(false))
   let cookieCheck = cookies.get('connect.sid');
   // console.log("Cookie Check", cookieCheck)
-  if(ULogged?.is_engineer===true || cookieCheck != undefined){
-    navigate('/engineerView/landingPage')
+  if(ULogged?.is_engineer===true || ULogged?.is_reviewer===true || cookieCheck != undefined){
+    navigate('/view/landingPage')
   }
   let AlertMessage = JSON.parse(localStorage.getItem("AlertMessage"))
   if(AlertMessage != undefined){
@@ -82,6 +91,19 @@ export const Login = () => {
     setAlertValue(AlertMessage)
   }
  },[])
+ useEffect(()=>{
+  dispatch(LoaderStatus(false))
+  let cookieCheck = cookies.get('connect.sid');
+  // console.log("Cookie Check", cookieCheck)
+  if(ULogged?.is_engineer===true || ULogged?.is_reviewer===true || cookieCheck != undefined){
+    navigate('/view/landingPage')
+  }
+  let AlertMessage = JSON.parse(localStorage.getItem("AlertMessage"))
+  if(AlertMessage != undefined){
+    setShowRed(true)
+    setAlertValue(AlertMessage)
+  }
+ },[ULogged])
 
   return (
     <>

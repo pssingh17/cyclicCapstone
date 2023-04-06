@@ -8,6 +8,11 @@ const {Op} = require('sequelize')
 const project = require('../models/Project')
 const documentType = require('../models/DocumentType')
 const reportStatus = require('../models/ReportStatus')
+const statusType = require('../service/staticData/StatusType')
+const comments = require('../models/ReviewerComments')
+const user = require('../models/User')
+const reviewStandards = require('../models/ReviewStandards')
+const reviewStandardMapping = require('../models/ReviewStandardsMapping')
 
 async function saveReport(body,userId,documentPresent){
 
@@ -24,8 +29,8 @@ async function saveReport(body,userId,documentPresent){
         products_covered : body.products_covered,
         models : body.models,
         is_saved: body.is_saved,
-        created_at : date,
-        updated_at : date,
+        created_at : new Date(),
+        updated_at : new Date(),
         status_id  : body.is_saved.toLowerCase() === 'true'?4:1,
         is_active : true,
         receiving_customer : body.receiving_customer,
@@ -57,8 +62,8 @@ async function saveDocument(userId,reportId,type,blobName,originalName,subTypeId
             file_id : (Math.floor(Math.random()*900000) + alphanumeric(3)).toUpperCase(),
             original_file_name:originalName,
             storage_file_name:blobName,
-            created_at : date,
-            updated_at : date,
+            created_at : new Date(),
+            updated_at : new Date(),
             type:type,
             sub_type:subTypeId,
             submitted_by:userId,
@@ -109,14 +114,17 @@ async function getProjectLinkedToReports(reportId,userId){
                 model:project,
                 as:"project_number_fk",
                 attributes:["project_number","project_name"]
-            }
+            },
+            raw:true
         })
 
-        const projects = result.map((data) => data.project_number_fk)
-
+        const projects = result.map((data) => ({
+            project_number:data['project_number_fk.project_number'],
+            project_name:data['project_number_fk.project_name']
+        }))
+         
+    
         return new Response(200,"SUCCESS",`Projects Linked to reportId ${reportId}`,projects)
-        
-
     }catch(error){
              console.log("Error in fetching projects linked to a report " + error)
              return new Response(500,"FAILURE","Unknown error occured.",null)
@@ -137,7 +145,7 @@ async function getAllReportsBasedOnDocumentType(projectId,screenId,req){
     r.created_at as 'report_created_at' , d.file_id  , d.original_file_name , d.type as 'file_type' ,
      d.submitted_by as 'file_uploaded_by', dt.name as 'file_sub_type' , st.name as 'report_status' from report r inner join report_documents d 
     on r.report_number = d.report_id inner join document_type dt on d.sub_type = dt.id inner join status_type st on
-    st.id = r.status_id where r.project_number=? and r.is_saved=? and d.sub_type in (?) ${isReviewer?alterQuery:''} limit ? offset ?`
+    st.id = r.status_id where r.project_number=? and r.is_saved=? and d.isDeleted=false and d.sub_type in (?) ${isReviewer?alterQuery:''} limit ? offset ?`
 
     try{
         const result = await sequelize.query(query,
@@ -221,7 +229,10 @@ async function getDocumentBasedOnDocId(docId){
     try{
         const result = await document.findOne({
             where:{
-                file_id:{[Op.eq]:docId}
+               [Op.and]:[
+                {file_id:{[Op.eq]:docId}},
+                {isDeleted:{[Op.eq]:false}}  
+               ]       
             },
             raw:true,
             attributes:['file_id','storage_file_name','type','report_id']
@@ -260,7 +271,7 @@ async function deleteDocument(docId,reportId){
          
         const result = await sequelize.transaction(async (t1)=>{
             
-            const docResult = await document.destroy({
+            const docResult = await document.update({isDeleted:true,updated_at:new Date()},{
                 where:{
                     file_id:{[Op.eq]:docId}
                 }
@@ -301,7 +312,10 @@ async function getDocumentsCountRelatedToReport(reportId){
         raw:true,
         include:{
             model:document,
-            as:'report_id_fk'
+            as:'report_id_fk',
+            where:{
+                isDeleted:{[Op.eq]:false}
+            }
         }
        })
 
@@ -317,6 +331,152 @@ async function getDocumentsCountRelatedToReport(reportId){
     }
 } 
 
+async function recordReviewerDecision(status_id,report_id){
+
+try{
+   let query = `update report set status_id=? , updated_at=? where report_number=?`
+   const result = await sequelize.query(query,{
+    replacements:[+status_id,new Date(),report_id],
+    type:QueryTypes.UPDATE,
+    raw:true
+   })
+       
+   return new Response(200,"SUCCESS",`Report Status updated to ${await statusType.getStatusNameFromId(status_id)} for Id ${report_id}.`,result)
+}catch(error){
+    console.error("Error in recording reviewer decision " + error)
+    return new Response(500,"FAILURE","Unknown error occured.",null) 
+}
+
+}
+
+
+async function addCommentsToTheReport(data,userId){
+
+     try{
+
+        const result = await comments.create({
+            comment:data.comment,
+            recommendations:data.recommendations,
+            created_at:new Date(),
+            reviewer_id:userId,
+            report_id:data.report_id
+        })
+
+     }catch(error){
+        if(error.name === "SequelizeForeignKeyConstraintError"){
+            console.log("Error in saving comment wrong data " + error.name)
+        }
+        console.error("Error in saving comments " + error)
+     }
+}
+
+async function getAllInformationByReportId(reportId){
+
+    try{
+         const reportInfo = await report.findByPk(reportId,{
+            raw:true,
+            include:[
+                {model:project , as:'project_number_fk'},
+                {model:user, as:'receiving_customer_fk' , attributes:["name","id"]},
+                {model:user , as:'reviewer_id_fk', attributes:["name","id"]},
+                {model:user , as:'created_by_fk', attributes:["name","id"]}
+            ]
+         })
+
+         const documentInfo = await document.findAll({
+            where:{
+               [Op.and]:[
+                {report_id:{[Op.eq]:reportId}},
+                {isDeleted:{[Op.eq]:false}}
+               ]
+            }
+         })
+
+         let query = `select * from review_standards where id in (select standard_id from report_standards_mapping where report_id=?)`
+         const reviewMapping = await sequelize.query(query,{
+            replacements:[reportId],
+            raw:true,
+            type:QueryTypes.SELECT
+         }) 
+
+
+        const result = {
+            report:reportInfo,
+            documents:documentInfo,
+            standards:reviewMapping
+        }
+         
+
+         return new Response(200,"SUCCESS",`Information for report with id ${reportId}.`,result)
+
+    }catch(error){
+        console.error("Error in recording reviewer decision " + error)
+        return new Response(500,"FAILURE","Unknown error occured.",null) 
+    }
+
+}
+
+async function updateReport(query){
+
+    try{  
+        const result = await sequelize.query(query,{
+            raw:true,
+            replacements:[new Date()],
+            type:QueryTypes.UPDATE
+        })
+        return new Response(200,"SUCCESS",`Information updated successfully.`,result)
+    }catch(error){
+        if(error.name==='SequelizeForeignKeyConstraintError'){
+            return new Response(400,"FAILURE","User(receiving_customer/reviewer) does not exist in the system.",null) 
+        }
+        console.log("Error in updating the report " + error)
+        return new Response(500,"FAILURE","Unknown error occured.",null) 
+    }
+}
+
+async function getAllReportReviewStandards(){
+
+    try{
+           const result = await reviewStandards.findAll()
+           return new Response(200,"SUCCESS",`Review Standards.`,result)
+    }catch(error){
+        console.error("Error in fetching review standards " + error)
+        return new Response(500,"FAILURE","Unknown error occured.",null) 
+    }
+}
+
+async function createReportStandards(reportId,standardIdList){
+  try{
+
+    for(let id of standardIdList){
+        await reviewStandardMapping.create({
+            report_id:reportId,
+            standard_id:parseInt(id)
+        })
+    }
+   
+    return new Response(200,"SUCCESS",`Review Standards Registered.`,null)
+  }catch(error){
+    console.error("Error in saving review standards " + error)
+    return new Response(500,"FAILURE","Unknown error occured.",null) 
+  }
+}
+
+async function getReportBasedOnReportId(reportId){
+     try{
+        
+        const result = await report.findByPk(reportId)
+
+        return new Response(200,"SUCCESS",`Report Info for id ${reportId}.`,result)
+
+     }catch(error){
+        console.error("Error in getting report based on Id " + error)
+        return new Response(500,"FAILURE","Unknown error occured.",null) 
+     }
+}
+
 module.exports = {saveReport,saveDocument,getReportsWithStatusCount,getProjectLinkedToReports,
     getAllReportsBasedOnDocumentType,getReportsWithNoDocumentsUploaded,getDocumentBasedOnFileId,
-    getDocumentBasedOnDocId,updateDocument,deleteDocument,getDocumentsCountRelatedToReport}
+    getDocumentBasedOnDocId,updateDocument,deleteDocument,getDocumentsCountRelatedToReport,
+    recordReviewerDecision,addCommentsToTheReport,getAllInformationByReportId,updateReport,
+    getAllReportReviewStandards,createReportStandards,getReportBasedOnReportId}

@@ -8,11 +8,11 @@ export const Header = () => {
   return (
     <>
       <div className="header">
-        <div className="dcLogoHead flex-fill">
+        <div className="dcLogoHead flex-fill" >
         <img
-          style={{ width: "169px", height: "79px" }}
+          style={{ width: "169px", height: "79px" ,cursor:"pointer"}}
           src={dailyComplianceLogo}
-          onClick={()=>navigate('/engineerView/landingPage')}
+          onClick={()=>navigate('/view/landingPage')}
         />
         </div>
         <div>

@@ -15,6 +15,14 @@ const appDir = dirname(require.main.filename)
 const path = require('path')
 const reveiwerService = require('../service/reveiwerService')
 const FileType = require('../service/staticData/FileType')
+const os = require('os')
+const reviewStandardTypes = require('../service/staticData/ReviewsStandardTypes')
+const alphanumeric = require('alphanumeric-id')
+
+const updateKeyChecks = {
+    report : ['report_name','receiving_customer','reviewer_id','products_covered','models','comments'],
+    project_info: ['project_name','project_type']
+}
 
 
 function validateRequest(req){
@@ -62,6 +70,23 @@ async function saveReport(req,res){
                 throw new BadRequestError('Missing files report/certificate. Either File size is too large , or incorrect extension or file is not added in the request.')
             }
 
+            const {reviewIds} = req.body
+            let reviewStandardList = null
+
+            if(reviewIds){
+                reviewStandardList = reviewIds.split(',')
+                if(! await reviewStandardTypes.validateReviewIds(reviewStandardList)){
+                    throw new BadRequestError('Invalid Review Standard Ids.')
+                }
+            }
+
+            const {issued_at} = req.body
+            const issuedAt = new Date(issued_at)
+            console.log(issuedAt)
+            if(issuedAt.getTime() > (new Date().getTime())){
+                throw new BadRequestError('Issued At Date must be less than or equal to current date.')
+            }
+
             const response = await reportDao.saveReport(req.body,userId,(hasReport || hasCertificate))
 
             console.log(response)
@@ -97,6 +122,14 @@ async function saveReport(req,res){
                         }
                     }
                 })
+
+                
+                if(reviewIds){
+                    const reviewStandardResponse = await reportDao.createReportStandards(response.data.id,reviewStandardList)
+                    if(reviewStandardResponse.getStatusCode() !== 200){
+                        throw new IllegalStateError("Unknown error occured")
+                    }
+                }  
 
             }else{
                 console.log("Report could not be saved for creator with id " + userId)
@@ -186,12 +219,16 @@ async function downloadDocumentRelatedToReport(fileId,res){
     const containerName = (report.report_id).toLowerCase()
     const blobName = report.storage_file_name
     const fileName = blobName+report.original_file_name
-    const filePath = path.join(appDir,'/downloads',`/${fileName}`)
-    await azureStorage.downloadBlob(containerName,blobName,filePath)
-    setTimeout(()=>{
-          deleteFilesFromLocal(filePath)
-    },10000)
-    return res.download(filePath)
+    console.log("Root " + os.tmpdir())
+    const filePath =  path.join(os.tmpdir(),`${fileName}`)
+    const readStream = await azureStorage.downloadBlob(containerName,blobName,filePath)
+    // setTimeout(()=>{
+    //       deleteFilesFromLocal(filePath)
+    // },10000)
+    //res.attachment(`${report.original_file_name}`);
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document')
+    res.setHeader('Content-Disposition', `attachment; fileName=${report.original_file_name}`)
+    return await readStream.readableStreamBody.pipe(res)
 }
 
 async function updateDocument(req,res){
@@ -276,21 +313,17 @@ async function deleteDocument(req,res){
             return res.status(400).json((new Response(400,"FAILURE","Invalid doc_id. No data exists.",null)).getErrorObject())
         }
 
-        const containerName = report_id.toLowerCase()
         let deleteResponse=null
         if(count === 1){
-            await azureStorage.deleteContainer(containerName)
             deleteResponse =  await reportDao.deleteDocument(doc_id,report_id)
         }else{
-            const blobName = document[0]['report_id_fk.storage_file_name']
-            await azureStorage.deleteBlob(blobName,containerName)
             deleteResponse = await reportDao.deleteDocument(doc_id,null)
         }
       
         return res.json((new Response(200,"SUCCESS",`Document deleted with doc_id ${doc_id} linked to report_id ${report_id}.`,deleteResponse)).getSuccessObject())
     }catch(error){
         console.error("Error in deleting existing document " + error)
-        return res.json(( new Response(500,"FAILURE",`Unknown error occured.`,"")).getErrorObject())
+        return res.json(( new Response(500,"FAILURE",`Unknown error occured.`,null)).getErrorObject())
     }
 
 }
@@ -305,6 +338,114 @@ async function deleteFilesFromLocal(path){
       })
 }
 
+async function getAllInformationByReportId(reportId,res){
+    const response = await reportDao.getAllInformationByReportId(reportId)
+    return createResponse(response,res)
+}
+
+async function updateReportInfo(body,res){
+  
+   try{
+    if(!updateKeyChecks.hasOwnProperty(body.metaInfo)){
+        console.error("Wrong MetaInfo")
+        return res.status(400).json((new Response(400,"FAILURE","MetaInfo value is invalid.",null)).getErrorObject())
+    }
+
+    console.log(body)
+
+    const result = Object.keys(body.data).every((key) => updateKeyChecks[body.metaInfo].includes(key))
+ 
+    if(!result){
+    console.info("Invalid keys.")
+    return res.status(400).json((new Response(400,"FAILURE","Data fields are invalid.Update Process existed.",null)).getErrorObject())
+    }
+  
+    let length = Object.keys(body.data).length
+    if(length===0){
+    console.info("Length 0")
+    return res.status(400).json((new Response(400,"FAILURE","No fields available in the request to be processed.",null)).getErrorObject())
+    }
+    
+    let iter=1
+    let query = body.metaInfo==='report' ? `update report set`:
+    `update project_info p inner join report r on p.project_number=r.project_number set`
+    
+
+    for(let rel in body.data){
+    if(!body.data[rel] || body.data[rel].length === 0 || body.data[rel] === 'undefined'){
+        return res.status(400).json((new Response(400,"FAILURE","Values are empty/undefined for the fields to be updated.",null)).getErrorObject())
+    }
+    let col = body.metaInfo==='report' ?  `${rel} = '${body.data[rel]}'`: `p.${rel} = '${body.data[rel]}'`
+    
+    query = iter===1 ? query.concat(' ').concat(col) : query.concat(',').concat(' ').concat(col)
+    iter++;
+    }
+
+    let condition = body.metaInfo==='report' ?  `, updated_at=? where report_number='${body.where}'`
+                   : `, p.updated_at=? where r.report_number='${body.where}'`
+    
+
+    query = query.concat(' ').concat(condition)
+    console.info(query)
+    const response  = await reportDao.updateReport(query)
+    return createResponse(response,res)
+   }catch(error){
+       console.error("Error updating the report " + error)
+       return res.json(( new Response(500,"FAILURE",`Unknown error occured.`,"")).getErrorObject()) 
+   }
+
+}
+
+async function addAdditionalDocuments(req,res){
+     
+    try{
+        if(!isEngineer(req)){
+            return res.status(401).json((new Response(400,"FAILURE","Only engineer is allowed to add additional Docs.",null)).getErrorObject())  
+        }
+
+        const {reportId} = req.body
+        if(!reportId){
+          return res.status(400).json((new Response(400,"FAILURE","reportId missing in the request body.",null)).getErrorObject())    
+        }
+  
+     
+        const response = await reportDao.getReportBasedOnReportId(reportId)
+        if(response.getStatusCode()!==200){
+          return res.status(400).json((new Response(400,"FAILURE","ReportId missing in the request body.",null)).getErrorObject()) 
+        }
+  
+        const containerName = reportId.toLowerCase()
+        const blobName = containerName+"_"+"additional"+"_"+alphanumeric(7)
+        const containerClient = await azureStorage.getExistingContainer(containerName)
+        await azureStorage.uploadBlob(req.file,containerName,blobName,containerClient)
+        const saveDocResult = await reportDao.saveDocument(req.user.userId,reportId,"additional",blobName,req.file.originalname,6) 
+        if(saveDocResult.getStatusCode() !== 200){
+            return res.json(( new Response(500,"FAILURE",`Error in saving additional Document.`,"")).getErrorObject())
+        }   
+        
+        console.log("Container name : " + containerName + " and blob Name is : " + blobName)
+        
+        return res.json((new Response(200,"SUCCESS",`Additional document added successfully for reportId ${reportId}.`,saveDocResult.getData()))
+        .getSuccessObject())
+    }catch(error){
+        fs.unlink(req.file.path,(err)=>{
+            if(err){
+                console.error("Error in deleting files from local " + err)
+                return
+            }
+            console.log("Files deleted from local successfully.")
+        })
+        console.error("Error adding new Document to the report " + error)
+        return res.json(( new Response(500,"FAILURE",`Unknown error occured.`,"")).getErrorObject())
+    }
+}
+
+async function getAllReportReviewStandards(res){
+    const response = await reportDao.getAllReportReviewStandards()
+    createResponse(response,res)
+}
+
+
 function createResponse(response,res){
     if(response.getStatusCode() !== 200){
         return res.status(response.getStatusCode()).json(response.getErrorObject())
@@ -314,7 +455,8 @@ function createResponse(response,res){
 } 
 
 module.exports = {saveReport,getReportsWithStatusCount,deleteFilesFromLocal,downloadDocumentRelatedToReport,
-                 updateDocument,deleteDocument}
+                 updateDocument,deleteDocument,getAllInformationByReportId,updateReportInfo,getAllReportReviewStandards,
+                 addAdditionalDocuments}
 
 
 

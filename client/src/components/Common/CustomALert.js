@@ -17,7 +17,7 @@ export const CustomAlert = (props) => {
       <Alert className="col-12 col-md-8 col-lg-6 p-1 d-flex align-items-center justify-content-between" show={props.showGreen} variant="success" >
         <p style={{marginBottom:"0"}}>{alertValue}</p>
         <Button style={{fontSize:"80%"}} onClick={() => 
-          navigate('/engineerView/assignedProjects')
+          navigate('/view/assignedProjects')
           } variant="outline-success">
             Close
             </Button>

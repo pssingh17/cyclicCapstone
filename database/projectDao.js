@@ -36,8 +36,8 @@ async function saveProject(userId,body){
                 end_date:new Date(body.end_date),
                 created_by:userId,
                 transacting_customer:body.transacting_customer,
-                created_at:date,
-                updated_at:date
+                created_at:new Date(),
+                updated_at:new Date()
             })
 
             return newProject;
@@ -48,7 +48,7 @@ async function saveProject(userId,body){
    }catch(error){
 
     if(error.name === "SequelizeForeignKeyConstraintError"){
-        return new Response(400,"FAILURE","Receiving Customer and/or Report Creator are invalid users or Manufacturer does not exist in the system.","")
+        return new Response(400,"FAILURE","Receiving Customer and/or Report Creator are invalid users or Manufacturer does not exist in the system.",null)
     }
        console.log("ProjectDao || saveProject ==> " + JSON.stringify(error))
        return new Response(500,"FAILURE",`Unknown error occured.`,"")
@@ -78,8 +78,9 @@ async function getProjectByName(name,id,userId){
                 }   
             ]
         },
-        attributes : ['project_name','project_number']
-    },{raw:true})
+        attributes : ['project_name','project_number'],
+        raw:true
+    })
     
     return new Response(200,"SUCCESS",`Projects related to userId ${userId}.`,projects)
    }catch(error){
@@ -145,6 +146,26 @@ async function getEngineerLatestNotifications(userId,limit,offset){
 
 }
 
+async function getAllProjects(userId){
+
+    try{
+        const result = await project.findAll({
+            where:{
+                created_by:{[Op.eq]:userId}
+            },
+            attributes:["project_number","project_name"],
+            raw:true
+        })
+        
+        return new Response(200,"SUCCESS",`Projects of Engineer with id ${userId}.`,result)
+
+    }catch(error){
+        console.log("Error in getting all projects of an engineer " + error)
+        return new Response(500,"FAILURE",`Unknown error occured.`,null)
+    }
+
+}
+
 function getLimitAndOffset(req){
 
     let {limit,offset} = req.query
@@ -164,5 +185,5 @@ function getLimitAndOffset(req){
 }
 
 
-module.exports = {saveProject,getProjectByName,getAllProjectInfo,getEngineerLatestNotifications}
+module.exports = {saveProject,getProjectByName,getAllProjectInfo,getEngineerLatestNotifications,getAllProjects}
 
